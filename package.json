@@ -1,0 +1,178 @@
+{
+  "name": "extension-nest-demo",
+  "displayName": "Extension Nest Demo",
+  "description": "A native VS Code TreeView and editor Dashboard demo for organizing extensions.",
+  "version": "0.1.0",
+  "private": true,
+  "publisher": "local-demo",
+  "license": "UNLICENSED",
+  "engines": {
+    "vscode": "^1.137.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished",
+    "onView:extensionNest.groups",
+    "onCommand:extensionNest.openDashboard",
+    "onCommand:extensionNest.createGroup",
+    "onCommand:extensionNest.import",
+    "onCommand:extensionNest.export"
+  ],
+  "main": "./dist/extension.js",
+  "scripts": {
+    "build": "npm --prefix demo run build && node esbuild.mjs",
+    "typecheck": "tsc --noEmit -p tsconfig.extension.json",
+    "package": "npm run build && vsce package --no-dependencies --allow-missing-repository --skip-license --readme-path demo/INSTALL.md --out extension-nest-demo.vsix"
+  },
+  "contributes": {
+    "views": {
+      "explorer": [
+        {
+          "id": "extensionNest.groups",
+          "name": "Extension Nest Demo",
+          "contextualTitle": "Extension Nest Demo",
+          "visibility": "visible"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "extensionNest.openDashboard",
+        "title": "Open Extension Nest Dashboard",
+        "icon": "$(dashboard)",
+        "category": "Extension Nest Demo"
+      },
+      {
+        "command": "extensionNest.showGroups",
+        "title": "Show Extension Nest Groups",
+        "category": "Extension Nest Demo"
+      },
+      {
+        "command": "extensionNest.createGroup",
+        "title": "Create Demo Group",
+        "icon": "$(add)",
+        "category": "Extension Nest Demo"
+      },
+      {
+        "command": "extensionNest.renameGroup",
+        "title": "Rename Demo Group",
+        "category": "Extension Nest Demo"
+      },
+      {
+        "command": "extensionNest.deleteGroup",
+        "title": "Delete Demo Group",
+        "category": "Extension Nest Demo"
+      },
+      {
+        "command": "extensionNest.moveToGroup",
+        "title": "Move Demo Extension to Group",
+        "category": "Extension Nest Demo"
+      },
+      {
+        "command": "extensionNest.toggle",
+        "title": "Toggle Demo Extension",
+        "category": "Extension Nest Demo"
+      },
+      {
+        "command": "extensionNest.update",
+        "title": "Update Demo Extension",
+        "category": "Extension Nest Demo"
+      },
+      {
+        "command": "extensionNest.uninstall",
+        "title": "Uninstall Demo Extension",
+        "category": "Extension Nest Demo"
+      },
+      {
+        "command": "extensionNest.resetDemo",
+        "title": "Reset Extension Nest Demo",
+        "category": "Extension Nest Demo"
+      },
+      {
+        "command": "extensionNest.import",
+        "title": "Import Extension Nest Demo State",
+        "category": "Extension Nest Demo"
+      },
+      {
+        "command": "extensionNest.export",
+        "title": "Export Extension Nest Demo State",
+        "category": "Extension Nest Demo"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "extensionNest.openDashboard",
+          "when": "view == extensionNest.groups",
+          "group": "navigation"
+        },
+        {
+          "command": "extensionNest.createGroup",
+          "when": "view == extensionNest.groups",
+          "group": "navigation"
+        },
+        {
+          "command": "extensionNest.import",
+          "when": "view == extensionNest.groups",
+          "group": "tools"
+        },
+        {
+          "command": "extensionNest.export",
+          "when": "view == extensionNest.groups",
+          "group": "tools"
+        },
+        {
+          "command": "extensionNest.resetDemo",
+          "when": "view == extensionNest.groups",
+          "group": "tools"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "extensionNest.openDashboard",
+          "when": "view == extensionNest.groups && (viewItem == extensionNest.group || viewItem == extensionNest.ungrouped || viewItem =~ /^extensionNest\\.extension/)",
+          "group": "inline"
+        },
+        {
+          "command": "extensionNest.renameGroup",
+          "when": "view == extensionNest.groups && viewItem == extensionNest.group",
+          "group": "group"
+        },
+        {
+          "command": "extensionNest.deleteGroup",
+          "when": "view == extensionNest.groups && viewItem == extensionNest.group",
+          "group": "group"
+        },
+        {
+          "command": "extensionNest.moveToGroup",
+          "when": "view == extensionNest.groups && viewItem =~ /^extensionNest\\.extension/",
+          "group": "manage@1"
+        },
+        {
+          "command": "extensionNest.toggle",
+          "when": "view == extensionNest.groups && viewItem =~ /^extensionNest\\.extension/",
+          "group": "manage@2"
+        },
+        {
+          "command": "extensionNest.update",
+          "when": "view == extensionNest.groups && viewItem =~ /^extensionNest\\.extension/",
+          "group": "manage@3"
+        },
+        {
+          "command": "extensionNest.uninstall",
+          "when": "view == extensionNest.groups && viewItem =~ /^extensionNest\\.extension/",
+          "group": "manage@4"
+        }
+      ]
+    }
+  },
+  "devDependencies": {
+    "@types/node": "22.20.2",
+    "@types/vscode": "1.137.0",
+    "@vscode/vsce": "3.9.2",
+    "esbuild": "0.28.2",
+    "typescript": "7.0.2"
+  }
+}
