@@ -115,7 +115,7 @@ export class DemoTreeProvider
       const extensions = this.state.extensions.filter((extension) => extension.groupId === element.groupId);
       const treeItem = new vscode.TreeItem(
         element.label,
-        vscode.TreeItemCollapsibleState.Collapsed,
+        vscode.TreeItemCollapsibleState.Expanded,
       );
       treeItem.id = `extension-nest-group:${element.groupId ?? "ungrouped"}`;
       treeItem.contextValue = element.groupId === null ? "extensionNest.ungrouped" : "extensionNest.group";
@@ -199,7 +199,7 @@ export class DemoTreeProvider
       return;
     }
 
-    const extensionPayload = this.readPayload(dataTransfer, "application/vnd.extension-nest.demo-extension");
+    const extensionPayload = await this.readPayload(dataTransfer, "application/vnd.extension-nest.demo-extension");
     if (extensionPayload) {
       const ids = extensionPayload.ids.filter((id) => this.state.extensions.some((extension) => extension.id === id));
       if (ids.length > 0) {
@@ -208,7 +208,7 @@ export class DemoTreeProvider
       return;
     }
 
-    const groupPayload = this.readPayload(dataTransfer, "application/vnd.extension-nest.demo-group");
+    const groupPayload = await this.readPayload(dataTransfer, "application/vnd.extension-nest.demo-group");
     if (!groupPayload || target.groupId === null) {
       return;
     }
@@ -222,14 +222,14 @@ export class DemoTreeProvider
   }
 
   /** 从内部 MIME 数据读取可接受的 ID 数组。 */
-  private readPayload(dataTransfer: vscode.DataTransfer, mimeType: string): { ids: string[] } | undefined {
+  private async readPayload(dataTransfer: vscode.DataTransfer, mimeType: string): Promise<{ ids: string[] } | undefined> {
     const item = dataTransfer.get(mimeType);
-    if (!item || typeof item.value !== "string") {
+    if (!item) {
       return undefined;
     }
 
     try {
-      const value: unknown = JSON.parse(item.value);
+      const value: unknown = JSON.parse(typeof item.value === "string" ? item.value : await item.asString());
       if (!isRecord(value) || !Array.isArray(value.ids)) {
         return undefined;
       }

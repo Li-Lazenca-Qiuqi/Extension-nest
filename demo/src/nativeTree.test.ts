@@ -30,3 +30,10 @@ describe('native tree drag controller',()=>{
   expect(state.groups[0].id).toBe('writing');expect(state.extensions).toEqual(seedState.extensions);
  });
 });
+
+it('reads asynchronous native drag data when value is unavailable',async()=>{
+ let state=structuredClone(seedState);const tree=new DemoTreeProvider(state,async action=>{state=reducer(state,action as Parameters<typeof reducer>[1])});
+ const transfer=new vscode.DataTransfer();transfer.set('application/vnd.extension-nest.demo-extension',{value:undefined,asString:async()=>JSON.stringify({ids:['ms-toolsai.jupyter']})});
+ await tree.handleDrop(new DemoGroupNode('writing','Writing',undefined),transfer as never,{} as never);
+ expect(state.extensions.find(e=>e.id==='ms-toolsai.jupyter')?.groupId).toBe('writing');
+});

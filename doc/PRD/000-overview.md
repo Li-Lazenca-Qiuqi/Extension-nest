@@ -84,7 +84,7 @@
 | 组标题 | 点击展开/折叠；右键重命名、删除和添加扩展；拖动标题排序 |
 | 原生扩展行 / Dashboard 卡片 | 点击选中；可见详情按钮或右键打开原生详情；右键提供 Move to Group、Move to Ungrouped、Edit Tags、Enable/Disable、Update、Copy ID |
 | 插件拖放 | 从当前组拖到目标组即移动；拖到 Ungrouped 即解除归属；悬停提示 Move to… 并突出目标 |
-| 批量整理 | Dashboard 卡片复选框支持纯鼠标多选并点击 Move to Group 或 Set Tags；拖动选中集合在原生 TreeView 内完成 |
+| 批量整理 | Dashboard 卡片复选框支持纯鼠标多选并点击 Move to Group 或 Set Tags；原生 TreeView 与 Dashboard 分组区域均支持拖动选中集合 |
 | 标题工具栏 | Create Group、Refresh、Open Dashboard；其他动作置于可点击更多菜单 |
 | 名称/搜索输入 | 输入文本仍可使用键盘，但不要求快捷键、命令面板或 Shell 命令 |
 
