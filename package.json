@@ -2,7 +2,7 @@
   "name": "extension-nest-demo",
   "displayName": "Extension Nest Demo",
   "description": "A native VS Code TreeView and editor Dashboard demo for organizing extensions.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
   "publisher": "local-demo",
   "license": "UNLICENSED",

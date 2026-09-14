@@ -1,6 +1,6 @@
 # Extension Nest Demo
 
-当前版本：**0.1.1**。最低 VS Code 版本：1.137.0。
+当前版本：**0.1.2**。最低 VS Code 版本：1.137.0。
 
 这是运行在 VS Code 内的交互演示：分组位于原生 Explorer 侧边栏，Dashboard 位于编辑器 Webview。Dashboard 不创建第二个网页侧边栏。
 
@@ -27,4 +27,4 @@ Tag 可添加多个，仅参与筛选和搜索，不参与分组；不提供配�
 - [当前待办](doc/TODO.md)
 - [路线图](doc/Roadmap.md)
 
-0.1.1 为本地交互 Demo，尚未发布到 Marketplace。版本变化见 [CHANGELOG](CHANGELOG.md)。
+0.1.2 为本地交互 Demo，尚未发布到 Marketplace。版本变化见 [CHANGELOG](CHANGELOG.md)。

@@ -1,6 +1,6 @@
 # PRD-000：产品总览与模块索引
 
-更新日期：2026-09-14。当前软件版本：0.1.1（示例数据 Demo）。本文和模块 PRD 定义正式产品要求，Demo 完成不代表正式 P0 验收通过。
+更新日期：2026-09-14。当前软件版本：0.1.2（示例数据 Demo）。本文和模块 PRD 定义正式产品要求，Demo 完成不代表正式 P0 验收通过。
 
 工作名称 Extension Nest；发布名称、publisher 和 License 尚待确认。来源为[原始聊天](https://chatgpt.com/c/6a3e8b9a-2fa8-83ee-9434-b25eb36b0ec2)，后续以用户明确修订及[决策记录](../decisions/003-tags-and-reduced-scope.md)为准。
 
