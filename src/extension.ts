@@ -1,7 +1,8 @@
 import * as vscode from "vscode";
 import type { Action, DemoState, Extension, Group } from "../demo/src/models";
 import { seedState } from "../demo/src/seed";
-import { reducer, validateState } from "../demo/src/state";
+import { migrateState, reducer } from "../demo/src/state";
+import { normalizeTags } from "../demo/src/tags";
 import { DashboardPanel, type DashboardFilter, type DashboardHostCallbacks } from "./dashboardPanel";
 import {
   DemoExtensionNode,
@@ -47,9 +48,6 @@ class ExtensionNestHost implements vscode.Disposable {
     const callbacks: DashboardHostCallbacks = {
       getState: () => this.state,
       onAction: (action) => this.dispatchAction(action),
-      onImport: (state) => this.importStateFromWebview(state),
-      onImportFile: () => this.importStateFromFile(),
-      onExport: () => this.exportStateToFile(),
       onShowGroups: () => this.focusGroupsView(),
     };
     this.dashboard = new DashboardPanel(context.extensionUri, callbacks);
@@ -88,10 +86,8 @@ class ExtensionNestHost implements vscode.Disposable {
     register("extensionNest.moveToGroup", (value?: unknown) => this.moveToGroup(value));
     register("extensionNest.toggle", (value?: unknown) => this.toggleExtension(value));
     register("extensionNest.update", (value?: unknown) => this.updateExtension(value));
-    register("extensionNest.uninstall", (value?: unknown) => this.uninstallExtension(value));
+    register("extensionNest.setTags", (value?: unknown) => this.setTags(value));
     register("extensionNest.resetDemo", () => this.resetDemo());
-    register("extensionNest.import", () => this.importStateFromFile());
-    register("extensionNest.export", () => this.exportStateToFile());
   }
 
   /** 打开编辑器 Dashboard，并在原生组点击时传递对应筛选。 */
@@ -154,7 +150,7 @@ class ExtensionNestHost implements vscode.Disposable {
     }
 
     const choice = await vscode.window.showWarningMessage(
-      `Delete the demo group “${group.name}”? Its demo extensions will become Ungrouped; no real extension will be uninstalled.`,
+      `Delete the demo group “${group.name}”? Its demo extensions will become Ungrouped; no real extension will be affected.`,
       { modal: true },
       "Delete Demo Group",
       "Cancel",
@@ -204,22 +200,28 @@ class ExtensionNestHost implements vscode.Disposable {
     }
   }
 
-  /** 在明确说明只从演示清单移除后确认卸载。 */
-  private async uninstallExtension(value?: unknown): Promise<void> {
-    const id = getExtensionId(value, this.state);
-    const extension = id ? this.state.extensions.find((candidate) => candidate.id === id) : undefined;
-    if (!extension) {
+  /** 通过逗号分隔的输入编辑一个或多个演示扩展的独立标签。 */
+  private async setTags(value?: unknown): Promise<void> {
+    const ids = getExtensionIds(value, this.state);
+    if (ids.length === 0) {
       return;
     }
 
-    const choice = await vscode.window.showWarningMessage(
-      `Uninstall the demo extension “${extension.name}” (${extension.id})? This only changes the demo list and never uninstalls a real VS Code extension.`,
-      { modal: true },
-      "Uninstall Demo Extension",
-      "Cancel",
-    );
-    if (choice === "Uninstall Demo Extension") {
-      await this.dispatchAction({ type: "uninstall", id: extension.id });
+    const firstExtension = this.state.extensions.find((extension) => extension.id === ids[0]);
+    const input = await vscode.window.showInputBox({
+      prompt: `Edit demo tags for ${ids.length === 1 ? firstExtension?.name ?? "extension" : `${ids.length} extensions`}`,
+      value: firstExtension?.tags.join(", ") ?? "",
+      placeHolder: "tag1, tag2, tag3",
+      ignoreFocusOut: true,
+      validateInput: (raw) => validateTagsInput(raw),
+    });
+    if (input === undefined) {
+      return;
+    }
+
+    const tags = parseTagsInput(input);
+    if (tags) {
+      await this.dispatchAction({ type: "setTags", ids, tags });
     }
   }
 
@@ -234,82 +236,6 @@ class ExtensionNestHost implements vscode.Disposable {
     if (choice === "Reset Demo") {
       await this.dispatchAction({ type: "reset" });
     }
-  }
-
-  /** 对 Webview 导入的状态执行完整校验、确认和原子替换。 */
-  private async importStateFromWebview(value: unknown): Promise<void> {
-    if (!validateState(value)) {
-      this.reportError("The demo state is invalid and was not imported.");
-      return;
-    }
-    await this.replaceStateWithConfirmation(value, "Webview import");
-  }
-
-  /** 从原生打开对话框读取 JSON，并在替换前显示演示数据确认。 */
-  private async importStateFromFile(): Promise<void> {
-    const uris = await vscode.window.showOpenDialog({
-      canSelectMany: false,
-      openLabel: "Import Demo State",
-      filters: { JSON: ["json"] },
-    });
-    const uri = uris?.[0];
-    if (!uri) {
-      return;
-    }
-
-    try {
-      const bytes = await vscode.workspace.fs.readFile(uri);
-      const parsed: unknown = JSON.parse(new TextDecoder("utf-8").decode(bytes));
-      if (!validateState(parsed)) {
-        this.reportError("The selected file is not a valid Extension Nest demo state.");
-        return;
-      }
-      await this.replaceStateWithConfirmation(parsed, "File import");
-    } catch (error) {
-      this.reportError(`Could not import the demo state: ${getErrorMessage(error)}`);
-    }
-  }
-
-  /** 把当前演示状态序列化到原生保存对话框选定的 JSON 文件。 */
-  private async exportStateToFile(): Promise<void> {
-    const uri = await vscode.window.showSaveDialog({
-      saveLabel: "Export Demo State",
-      filters: { JSON: ["json"] },
-      defaultUri: vscode.Uri.joinPath(this.context.globalStorageUri, "extension-nest-demo-state.json"),
-    });
-    if (!uri) {
-      return;
-    }
-
-    try {
-      const json = `${JSON.stringify(this.state, null, 2)}\n`;
-      await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(json));
-      void vscode.window.showInformationMessage("Extension Nest demo state exported.");
-    } catch (error) {
-      this.reportError(`Could not export the demo state: ${getErrorMessage(error)}`);
-    }
-  }
-
-  /** 在替换演示状态前请求明确确认，确认后只写入一个 globalState 快照。 */
-  private async replaceStateWithConfirmation(value: DemoState, source: string): Promise<void> {
-    const choice = await vscode.window.showWarningMessage(
-      `${source} will replace the current demo groups and assignments. This never installs, enables, disables, updates, or uninstalls a real extension. Continue?`,
-      { modal: true },
-      "Replace Demo State",
-      "Cancel",
-    );
-    if (choice !== "Replace Demo State") {
-      return;
-    }
-
-    await this.enqueue(async () => {
-      const next = cloneState(value);
-      if (!(await this.persist(next))) {
-        return;
-      }
-      this.state = next;
-      this.notifyStateChanged();
-    });
   }
 
   /** 在动作队列中校验消息、运行 reducer，并在持久化成功后同步两个界面。 */
@@ -387,7 +313,7 @@ class ExtensionNestHost implements vscode.Disposable {
 /** 读取有效的 globalState；没有有效快照时使用 seed 副本而不覆盖原值。 */
 function readPersistedState(context: vscode.ExtensionContext): DemoState {
   const stored: unknown = context.globalState.get<unknown>(STATE_KEY);
-  return validateState(stored) ? cloneState(stored) : cloneState(seedState);
+  return migrateState(stored) ?? cloneState(seedState);
 }
 
 /** 深复制状态，避免把 globalState 或 seedState 的对象直接交给 reducer。 */
@@ -395,7 +321,7 @@ function cloneState(state: DemoState): DemoState {
   return {
     schemaVersion: 1,
     groups: state.groups.map((group) => ({ ...group })),
-    extensions: state.extensions.map((extension) => ({ ...extension })),
+    extensions: state.extensions.map((extension) => ({ ...extension, tags: [...extension.tags] })),
   };
 }
 
@@ -430,10 +356,23 @@ function parseAction(value: unknown, state: DemoState): Action | undefined {
       return isNonEmptyString(value.id) && extensionIds.has(value.id)
         ? { type: "update", id: value.id }
         : undefined;
-    case "uninstall":
-      return isNonEmptyString(value.id) && extensionIds.has(value.id)
-        ? { type: "uninstall", id: value.id }
-        : undefined;
+    case "setTags": {
+      if (!Array.isArray(value.ids) || !value.ids.every(isNonEmptyString)) {
+        return undefined;
+      }
+      const ids = [...new Set(value.ids)];
+      if (ids.length === 0 || ids.some((id) => !extensionIds.has(id))) {
+        return undefined;
+      }
+      if (!Array.isArray(value.tags) || !value.tags.every((tag) => typeof tag === "string")) {
+        return undefined;
+      }
+      try {
+        return { type: "setTags", ids, tags: normalizeTags(value.tags) };
+      } catch {
+        return undefined;
+      }
+    }
     case "createGroup":
       return typeof value.name === "string" ? { type: "createGroup", name: value.name } : undefined;
     case "renameGroup":
@@ -470,6 +409,25 @@ function validateGroupNameInput(value: string, groups: readonly Group[], current
     (group) => group.id !== currentId && group.name.trim().toLocaleLowerCase() === name.toLocaleLowerCase(),
   );
   return duplicate ? "A demo group with this name already exists." : undefined;
+}
+
+/** 把输入框中的逗号分隔文本转换为规范化标签，空值表示清空标签。 */
+function parseTagsInput(value: string): string[] | undefined {
+  try {
+    return normalizeTags(value.split(","));
+  } catch {
+    return undefined;
+  }
+}
+
+/** 为标签输入框提供规范化失败原因。 */
+function validateTagsInput(value: string): string | undefined {
+  try {
+    normalizeTags(value.split(","));
+    return undefined;
+  } catch (error) {
+    return getErrorMessage(error);
+  }
 }
 
 /** 从原生命令参数中安全提取组 ID。 */

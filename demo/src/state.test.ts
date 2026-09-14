@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { seedState } from "./seed";
-import { reducer, validateState, loadState, saveState } from "./state";
+import { migrateState, reducer, validateState, loadState, saveState } from "./state";
 import type { DemoState } from "./models";
 
 /** 为每个测试创建独立的 seed 状态副本。 */
@@ -54,6 +54,22 @@ describe("demo state reducer", () => {
         ),
       }),
     ).toBe(false);
+    expect(
+      validateState({
+        ...state,
+        extensions: state.extensions.map((extension, index) =>
+          index === 0 ? { ...extension, tags: [" Data "] } : extension,
+        ),
+      }),
+    ).toBe(false);
+    expect(
+      validateState({
+        ...state,
+        extensions: state.extensions.map((extension, index) =>
+          index === 0 ? { ...extension, tags: "data" } : extension,
+        ),
+      }),
+    ).toBe(false);
   });
 
   it("rejects invalid or duplicate group names", () => {
@@ -64,17 +80,32 @@ describe("demo state reducer", () => {
     expect(reducer(state, { type: "renameGroup", id: "writing", name: " PYTHON & DATA " })).toBe(state);
   });
 
-  it("applies update and uninstall without mutating the input", () => {
+  it("applies update without mutating the input", () => {
     const state = freshState();
     const updated = reducer(state, { type: "update", id: "ms-python.python" });
     const python = updated.extensions.find((extension) => extension.id === "ms-python.python");
     expect(python?.version).toBe("2024.22.0");
     expect(python?.update).toBeUndefined();
     expect(state.extensions.find((extension) => extension.id === "ms-python.python")?.update).toBe("2024.22.0");
+  });
 
-    const uninstalled = reducer(updated, { type: "uninstall", id: "ms-python.python" });
-    expect(uninstalled.extensions.some((extension) => extension.id === "ms-python.python")).toBe(false);
-    expect(updated.extensions.some((extension) => extension.id === "ms-python.python")).toBe(true);
+  it("sets independent tags without changing group assignments", () => {
+    const state = freshState();
+    const original = state.extensions.find((extension) => extension.id === "ms-toolsai.jupyter")!;
+    const next = reducer(state, {
+      type: "setTags",
+      ids: [original.id],
+      tags: [" Data ", "data", "Research"],
+    });
+    const jupyter = next.extensions.find((extension) => extension.id === original.id)!;
+
+    expect(jupyter.tags).toEqual(["Data", "Research"]);
+    expect(jupyter.groupId).toBe(original.groupId);
+    expect(original.tags).toEqual(["Python", "Data"]);
+
+    const cleared = reducer(next, { type: "setTags", ids: [original.id], tags: [] });
+    expect(cleared.extensions.find((extension) => extension.id === original.id)?.tags).toEqual([]);
+    expect(cleared.extensions.find((extension) => extension.id === original.id)?.groupId).toBe(original.groupId);
   });
 
   it("reorders groups and keeps extensions untouched", () => {
@@ -91,6 +122,26 @@ describe("demo state reducer", () => {
     expect(loaded).toEqual(seedState);
     expect(loaded).not.toBe(seedState);
     expect(loaded.groups).not.toBe(seedState.groups);
+  });
+
+  it("migrates schema 1 states that do not have tags", () => {
+    const state = freshState();
+    const legacy = {
+      ...state,
+      extensions: state.extensions.map(({ tags: _tags, ...extension }) => extension),
+    };
+    const migrated = migrateState(legacy)!;
+
+    expect(migrated.schemaVersion).toBe(1);
+    expect(migrated.extensions.every((extension) => Array.isArray(extension.tags))).toBe(true);
+    expect(migrated.extensions.every((extension) => extension.tags.length === 0)).toBe(true);
+    expect(migrated.groups).toEqual(state.groups);
+    expect(migrated.extensions.map((extension) => extension.groupId)).toEqual(
+      state.extensions.map((extension) => extension.groupId),
+    );
+    expect(migrated.extensions.map((extension) => extension.enabled)).toEqual(
+      state.extensions.map((extension) => extension.enabled),
+    );
   });
 
   it("saves and loads a valid state", () => {

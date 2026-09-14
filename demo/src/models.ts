@@ -17,6 +17,7 @@ export interface Extension {
   enabled: boolean;
   monogram: string;
   color: string;
+  tags: string[];
 }
 
 /** 演示状态的持久化结构。 */
@@ -31,7 +32,7 @@ export type Action =
   | { type: "move"; ids: string[]; groupId: string | null }
   | { type: "toggle"; id: string }
   | { type: "update"; id: string }
-  | { type: "uninstall"; id: string }
+  | { type: "setTags"; ids: string[]; tags: string[] }
   | { type: "createGroup"; name: string }
   | { type: "renameGroup"; id: string; name: string }
   | { type: "deleteGroup"; id: string }

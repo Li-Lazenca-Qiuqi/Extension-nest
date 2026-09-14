@@ -6,9 +6,6 @@ import type { DemoState } from "../demo/src/models";
 export interface DashboardHostCallbacks {
   getState(): DemoState;
   onAction(action: unknown): Promise<void>;
-  onImport(state: unknown): Promise<void>;
-  onImportFile(): Promise<void>;
-  onExport(): Promise<void>;
   onShowGroups(): Promise<void>;
 }
 
@@ -108,15 +105,6 @@ export class DashboardPanel {
         return;
       case "action":
         await this.callbacks.onAction(message.action);
-        return;
-      case "import":
-        await this.callbacks.onImport(message.state);
-        return;
-      case "importFile":
-        await this.callbacks.onImportFile();
-        return;
-      case "export":
-        await this.callbacks.onExport();
         return;
       case "showGroups":
         await this.callbacks.onShowGroups();

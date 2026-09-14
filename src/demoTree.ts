@@ -146,6 +146,7 @@ export class DemoTreeProvider
       `Version: ${extension.version}`,
       `Status: ${status}`,
       extension.update ? `Available update: ${extension.update}` : undefined,
+      `Tags: ${extension.tags.length > 0 ? extension.tags.join(", ") : "None"}`,
     ]
       .filter((line): line is string => Boolean(line))
       .join("\n");

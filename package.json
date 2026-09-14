@@ -2,7 +2,7 @@
   "name": "extension-nest-demo",
   "displayName": "Extension Nest Demo",
   "description": "A native VS Code TreeView and editor Dashboard demo for organizing extensions.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "publisher": "local-demo",
   "license": "UNLICENSED",
@@ -16,9 +16,7 @@
     "onStartupFinished",
     "onView:extensionNest.groups",
     "onCommand:extensionNest.openDashboard",
-    "onCommand:extensionNest.createGroup",
-    "onCommand:extensionNest.import",
-    "onCommand:extensionNest.export"
+    "onCommand:extensionNest.createGroup"
   ],
   "main": "./dist/extension.js",
   "scripts": {
@@ -81,23 +79,13 @@
         "category": "Extension Nest Demo"
       },
       {
-        "command": "extensionNest.uninstall",
-        "title": "Uninstall Demo Extension",
+        "command": "extensionNest.setTags",
+        "title": "Edit Demo Extension Tags",
         "category": "Extension Nest Demo"
       },
       {
         "command": "extensionNest.resetDemo",
         "title": "Reset Extension Nest Demo",
-        "category": "Extension Nest Demo"
-      },
-      {
-        "command": "extensionNest.import",
-        "title": "Import Extension Nest Demo State",
-        "category": "Extension Nest Demo"
-      },
-      {
-        "command": "extensionNest.export",
-        "title": "Export Extension Nest Demo State",
         "category": "Extension Nest Demo"
       }
     ],
@@ -112,16 +100,6 @@
           "command": "extensionNest.createGroup",
           "when": "view == extensionNest.groups",
           "group": "navigation"
-        },
-        {
-          "command": "extensionNest.import",
-          "when": "view == extensionNest.groups",
-          "group": "tools"
-        },
-        {
-          "command": "extensionNest.export",
-          "when": "view == extensionNest.groups",
-          "group": "tools"
         },
         {
           "command": "extensionNest.resetDemo",
@@ -161,7 +139,7 @@
           "group": "manage@3"
         },
         {
-          "command": "extensionNest.uninstall",
+          "command": "extensionNest.setTags",
           "when": "view == extensionNest.groups && viewItem =~ /^extensionNest\\.extension/",
           "group": "manage@4"
         }

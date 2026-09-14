@@ -1,5 +1,6 @@
 import type { Action, DemoState, Extension, Group } from "./models";
 import { seedState } from "./seed";
+import { normalizeTags, tagsEqual } from "./tags";
 
 const STORAGE_KEY = "extension-nest-demo-v1";
 const MAX_GROUP_NAME_LENGTH = 50;
@@ -33,7 +34,7 @@ function cloneState(state: DemoState): DemoState {
   return {
     schemaVersion: 1,
     groups: state.groups.map((group) => ({ ...group })),
-    extensions: state.extensions.map((extension) => ({ ...extension })),
+    extensions: state.extensions.map((extension) => ({ ...extension, tags: [...extension.tags] })),
   };
 }
 
@@ -105,15 +106,28 @@ function updateExtension(state: DemoState, id: string): DemoState {
   return changed ? { ...state, extensions } : state;
 }
 
-/** 从演示状态中卸载指定扩展。 */
-function uninstallExtension(state: DemoState, id: string): DemoState {
-  if (!state.extensions.some((extension) => extension.id === id)) {
+/** 为选中的扩展设置同一组独立标签；标签不会影响 groupId。 */
+function setExtensionTags(state: DemoState, ids: string[], tags: string[]): DemoState {
+  let normalizedTags: string[];
+  try {
+    normalizedTags = normalizeTags(tags);
+  } catch {
     return state;
   }
-  return {
-    ...state,
-    extensions: state.extensions.filter((extension) => extension.id !== id),
-  };
+
+  if (ids.length === 0) {
+    return state;
+  }
+  const selectedIds = new Set(ids);
+  let changed = false;
+  const extensions = state.extensions.map((extension) => {
+    if (!selectedIds.has(extension.id) || tagsEqual(extension.tags, normalizedTags)) {
+      return extension;
+    }
+    changed = true;
+    return { ...extension, tags: [...normalizedTags] };
+  });
+  return changed ? { ...state, extensions } : state;
 }
 
 /** 创建一个经过名称校验的新组。 */
@@ -206,6 +220,17 @@ function validateExtension(value: unknown, groupIds: Set<string>): value is Exte
   const validGroupId = groupId === null || (isNonEmptyString(groupId) && groupIds.has(groupId));
   const update = value.update;
   const validUpdate = update === undefined || (isNonEmptyString(update) && update === update.trim());
+  const rawTags = value.tags;
+  if (!Array.isArray(rawTags) || !rawTags.every((tag) => typeof tag === "string")) {
+    return false;
+  }
+
+  let normalizedTags: string[];
+  try {
+    normalizedTags = normalizeTags(rawTags);
+  } catch {
+    return false;
+  }
 
   return (
     isNonEmptyString(value.id) &&
@@ -219,7 +244,8 @@ function validateExtension(value: unknown, groupIds: Set<string>): value is Exte
     typeof value.enabled === "boolean" &&
     isNonEmptyString(value.monogram) &&
     typeof value.color === "string" &&
-    value.color.trim().length > 0
+    value.color.trim().length > 0 &&
+    tagsEqual(rawTags, normalizedTags)
   );
 }
 
@@ -254,6 +280,22 @@ export function validateState(value: unknown): value is DemoState {
   return true;
 }
 
+/** 把没有 tags 字段的旧 schemaVersion=1 快照迁移到当前严格结构。 */
+export function migrateState(value: unknown): DemoState | undefined {
+  if (!isRecord(value) || value.schemaVersion !== 1 || !Array.isArray(value.groups) || !Array.isArray(value.extensions)) {
+    return undefined;
+  }
+
+  const extensions = value.extensions.map((extension) => {
+    if (!isRecord(extension) || Object.prototype.hasOwnProperty.call(extension, "tags")) {
+      return extension;
+    }
+    return { ...extension, tags: [] };
+  });
+  const candidate: unknown = { ...value, extensions };
+  return validateState(candidate) ? cloneState(candidate) : undefined;
+}
+
 /** 安全获取浏览器存储；运行在无 localStorage 的环境时返回 null。 */
 function getStorage(): Storage | null {
   try {
@@ -272,7 +314,7 @@ export function loadState(): DemoState {
       return cloneState(seedState);
     }
     const parsed: unknown = JSON.parse(raw);
-    return validateState(parsed) ? cloneState(parsed) : cloneState(seedState);
+    return migrateState(parsed) ?? cloneState(seedState);
   } catch {
     return cloneState(seedState);
   }
@@ -301,8 +343,8 @@ export function reducer(state: DemoState, action: Action): DemoState {
       return toggleExtension(state, action.id);
     case "update":
       return updateExtension(state, action.id);
-    case "uninstall":
-      return uninstallExtension(state, action.id);
+    case "setTags":
+      return setExtensionTags(state, action.ids, action.tags);
     case "createGroup":
       return createGroup(state, action.name);
     case "renameGroup":

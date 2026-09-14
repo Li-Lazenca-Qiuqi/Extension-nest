@@ -25,6 +25,7 @@ const extensions: Extension[] = [
     enabled: true,
     monogram: "C",
     color: groupColors.aiCoding,
+    tags: ["AI", "Coding"],
   },
   {
     id: "anthropic.claude-code",
@@ -36,6 +37,7 @@ const extensions: Extension[] = [
     enabled: true,
     monogram: "C",
     color: groupColors.aiCoding,
+    tags: ["AI", "Coding"],
   },
   {
     id: "github.copilot",
@@ -48,6 +50,7 @@ const extensions: Extension[] = [
     enabled: true,
     monogram: "C",
     color: groupColors.aiCoding,
+    tags: ["AI", "Coding"],
   },
   {
     id: "ms-python.python",
@@ -60,6 +63,7 @@ const extensions: Extension[] = [
     enabled: true,
     monogram: "P",
     color: groupColors.pythonData,
+    tags: ["Python", "Language"],
   },
   {
     id: "ms-python.vscode-pylance",
@@ -71,6 +75,7 @@ const extensions: Extension[] = [
     enabled: true,
     monogram: "P",
     color: groupColors.pythonData,
+    tags: ["Python", "Language"],
   },
   {
     id: "ms-toolsai.jupyter",
@@ -83,6 +88,7 @@ const extensions: Extension[] = [
     enabled: true,
     monogram: "J",
     color: groupColors.pythonData,
+    tags: ["Python", "Data"],
   },
   {
     id: "charliermarsh.ruff",
@@ -94,6 +100,7 @@ const extensions: Extension[] = [
     enabled: false,
     monogram: "RF",
     color: groupColors.pythonData,
+    tags: ["Python", "Quality"],
   },
   {
     id: "dbaeumer.vscode-eslint",
@@ -105,6 +112,7 @@ const extensions: Extension[] = [
     enabled: false,
     monogram: "ES",
     color: groupColors.webDevelopment,
+    tags: ["JavaScript", "Quality"],
   },
   {
     id: "esbenp.prettier-vscode",
@@ -116,6 +124,7 @@ const extensions: Extension[] = [
     enabled: true,
     monogram: "PR",
     color: groupColors.webDevelopment,
+    tags: ["JavaScript", "Formatting"],
   },
   {
     id: "eamodio.gitlens",
@@ -127,6 +136,7 @@ const extensions: Extension[] = [
     enabled: true,
     monogram: "GL",
     color: groupColors.webDevelopment,
+    tags: ["Git"],
   },
   {
     id: "james-yu.latex-workshop",
@@ -138,6 +148,7 @@ const extensions: Extension[] = [
     enabled: true,
     monogram: "LW",
     color: groupColors.writing,
+    tags: ["Writing", "LaTeX"],
   },
   {
     id: "yzhang.markdown-all-in-one",
@@ -149,6 +160,7 @@ const extensions: Extension[] = [
     enabled: true,
     monogram: "MD",
     color: groupColors.writing,
+    tags: ["Writing", "Markdown"],
   },
   {
     id: "mechatroner.rainbow-csv",
@@ -160,6 +172,7 @@ const extensions: Extension[] = [
     enabled: true,
     monogram: "RC",
     color: "#DB2777",
+    tags: ["Data", "CSV"],
   },
   {
     id: "pkief.material-icon-theme",
@@ -171,6 +184,7 @@ const extensions: Extension[] = [
     enabled: false,
     monogram: "MI",
     color: "#0EA5E9",
+    tags: ["Theme"],
   },
 ];
 
