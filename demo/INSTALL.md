@@ -1,6 +1,6 @@
 # Extension Nest Demo
 
-版本：0.1.2。需要 VS Code 1.137.0 或更新版本。
+版本：0.2.0。需要 VS Code 1.137.0 或更新版本。
 
 在 VS Code 原生 Extension Nest 侧边栏整理分组，在编辑器 Dashboard 查看与操作示例插件。不包含自建网页侧边栏。
 
