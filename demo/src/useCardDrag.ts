@@ -10,6 +10,7 @@ export function useCardDrag(onDrop:(ids:string[],groupId:string|null)=>void,onSt
  const [targetGroup,setTargetGroup]=useState<string|undefined>();
  const targetGroupRef=useRef<string|undefined>(undefined);
  const session=useRef<DragSession|null>(null);const frame=useRef<number|null>(null);
+ const suppressClick=useRef(false);
  const callbacks=useRef({onDrop,onStart});callbacks.current={onDrop,onStart};
  /** 清理预览与鼠标捕获；取消时不提交归属修改。 */
  function finish(){
@@ -50,6 +51,7 @@ export function useCardDrag(onDrop:(ids:string[],groupId:string|null)=>void,onSt
    if(!current.preview&&Math.hypot(current.x-current.startX,current.y-current.startY)<6)return;
    event.preventDefault();
    if(!current.preview){
+    suppressClick.current=true;
     const rect=current.source.getBoundingClientRect();const preview=current.source.cloneNode(true) as HTMLElement;
     preview.removeAttribute('data-extension');preview.removeAttribute('aria-label');preview.setAttribute('aria-hidden','true');preview.setAttribute('draggable','false');
     preview.querySelectorAll('[id]').forEach(element=>element.removeAttribute('id'));preview.querySelector('.context-menu')?.remove();
@@ -75,10 +77,13 @@ export function useCardDrag(onDrop:(ids:string[],groupId:string|null)=>void,onSt
  /** 仅鼠标左键从卡片非功能区域起拖，按钮与标签保持正常点击。 */
  function begin(event:ReactPointerEvent<HTMLElement>,ids:string[]){
   if(event.button!==0||event.pointerType==='touch'||session.current)return;
+  suppressClick.current=false;
   if(event.target instanceof Element&&event.target.closest('button,input,select,a,[role="menuitem"]'))return;
   const rect=event.currentTarget.getBoundingClientRect();const root=event.currentTarget.closest('.cards-region');if(!root)return;
   event.preventDefault();event.currentTarget.setPointerCapture?.(event.pointerId);
   session.current={source:event.currentTarget,root,ids:[...ids],pointerId:event.pointerId,startX:event.clientX,startY:event.clientY,x:event.clientX,y:event.clientY,offsetX:event.clientX-rect.left,offsetY:event.clientY-rect.top,preview:null,cursor:document.body.style.cursor};
  }
- return {activeIds,targetGroup,begin};
+ /** 拖动结束生成的 click 不能把刚移动的多选集合重新变为单选。 */
+ function consumeClick(){const suppressed=suppressClick.current;suppressClick.current=false;return suppressed}
+ return {activeIds,targetGroup,begin,consumeClick};
 }

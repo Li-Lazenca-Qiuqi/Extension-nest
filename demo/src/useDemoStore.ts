@@ -9,14 +9,20 @@ const host=window.acquireVsCodeApi?.();
 export function useDemoStore(){
  const [state,setState]=useState<DemoState>(()=>host?structuredClone(seedState):loadState());
  const [ready,setReady]=useState(!host);const [saved,setSaved]=useState(true);
+ const [icons,setIcons]=useState<Record<string,string>>({});
  const [hostError,setHostError]=useState('');const [nativeFilter,setNativeFilter]=useState<{group:string;nonce:number}>({group:'all',nonce:0});
  useEffect(()=>{if(!host)return;const listener=(event:MessageEvent)=>{
   const message=event.data;if(!message||typeof message!=='object')return;
   if(message.type==='state'&&validateState(message.state)){setState(message.state);setReady(true);setSaved(true);setHostError('')}
   else if(message.type==='filter'&&typeof message.groupId==='string')setNativeFilter(previous=>({group:message.groupId,nonce:previous.nonce+1}));
   else if(message.type==='error'){setHostError(String(message.message));setSaved(false)}
+  else if(message.type==='icons'&&message.icons&&typeof message.icons==='object')setIcons(message.icons);
  };window.addEventListener('message',listener);host.postMessage({type:'ready'});return()=>window.removeEventListener('message',listener)},[]);
  useEffect(()=>{if(!host)setSaved(saveState(state))},[state]);
  function dispatch(action:Action){if(host)host.postMessage({type:'action',action});else setState(current=>reducer(current,action))}
- return {state,ready,saved,hostError,nativeFilter,dispatch};
+ function openExtension(id:string){
+  if(host)host.postMessage({type:'openExtension',id});
+  else setHostError('Open this dashboard in VS Code to view the extension page.');
+ }
+ return {state,ready,saved,hostError,nativeFilter,dispatch,openExtension,icons,isNative:Boolean(host)};
 }

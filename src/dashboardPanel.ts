@@ -1,12 +1,14 @@
 import * as vscode from "vscode";
 import { randomBytes } from "node:crypto";
 import type { DemoState } from "../demo/src/models";
+import { loadExtensionIcon } from "./extensionIcons";
 
 /** Dashboard 可以请求宿主执行的回调集合。 */
 export interface DashboardHostCallbacks {
   getState(): DemoState;
   onAction(action: unknown): Promise<void>;
   onShowGroups(): Promise<void>;
+  onOpenExtension(id: unknown): Promise<void>;
 }
 
 /** Dashboard 的筛选值；all 表示完整演示清单。 */
@@ -68,6 +70,10 @@ export class DashboardPanel {
       return;
     }
     await this.panel.webview.postMessage({ type: "state", state });
+    const panel=this.panel;
+    void Promise.all(state.extensions.map(async extension=>[extension.id,await loadExtensionIcon(extension.id)] as const)).then(entries=>{
+      if(this.panel===panel&&this.ready)void panel.webview.postMessage({type:'icons',icons:Object.fromEntries(entries.filter(([,src])=>src))});
+    });
   }
 
   /** 向 Dashboard 报告宿主错误，面板尚未 ready 时延迟到首次握手后发送。 */
@@ -108,6 +114,13 @@ export class DashboardPanel {
         return;
       case "showGroups":
         await this.callbacks.onShowGroups();
+        return;
+      case "openExtension":
+        try {
+          await this.callbacks.onOpenExtension(message.id);
+        } catch (error) {
+          await this.postError(`Unable to open extension: ${error instanceof Error ? error.message : String(error)}`);
+        }
         return;
       default:
         return;

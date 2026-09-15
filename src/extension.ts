@@ -3,6 +3,7 @@ import type { Action, DemoState, Extension, Group } from "../demo/src/models";
 import { seedState } from "../demo/src/seed";
 import { migrateState, reducer } from "../demo/src/state";
 import { normalizeTags } from "../demo/src/tags";
+import { openNativeExtension } from "./nativeExtensions";
 import { DashboardPanel, type DashboardFilter, type DashboardHostCallbacks } from "./dashboardPanel";
 import {
   DemoExtensionNode,
@@ -49,6 +50,7 @@ class ExtensionNestHost implements vscode.Disposable {
       getState: () => this.state,
       onAction: (action) => this.dispatchAction(action),
       onShowGroups: () => this.focusGroupsView(),
+      onOpenExtension: (id) => openNativeExtension(id, this.state),
     };
     this.dashboard = new DashboardPanel(context.extensionUri, callbacks);
   }
