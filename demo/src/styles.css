@@ -9,5 +9,10 @@ body.vscode-light{color-scheme:light}
 .extension-card{cursor:grab}.extension-card:active{cursor:grabbing}.extension-section>summary{min-height:30px}
 
 .extension-card.is-dragging{opacity:.82}
+/* 顶部色线不占布局空间，分类颜色与启停状态分别表达。 */
+.extension-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--group-color);border-radius:4px 4px 0 0;pointer-events:none}
+.extension-section>summary{border-bottom:2px solid var(--group-color)}
+/* 拖放颜色跟随宿主主题；高对比度主题优先采用专用轮廓，缺省时从当前文字颜色派生。 */
+.extension-section.is-drop-target{background:var(--vscode-list-dropBackground,var(--vscode-editorGroup-dropBackground,color-mix(in srgb,currentColor 12%,transparent)));outline:1px solid var(--vscode-contrastActiveBorder,var(--vscode-focusBorder,currentColor));outline-offset:2px;border-radius:3px}
 
 .card-drag-preview{pointer-events:none!important;user-select:none;overflow:hidden}.card-drag-preview *{pointer-events:none!important}.extension-card{user-select:none}

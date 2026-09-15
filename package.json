@@ -25,8 +25,21 @@
     "package": "npm run build && vsce package --no-dependencies --allow-missing-repository --skip-license --readme-path demo/INSTALL.md --out extension-nest-demo.vsix"
   },
   "contributes": {
+    "colors": [
+      { "id": "extensionNest.group.purple", "description": "Extension Nest 紫色分类图标", "defaults": { "dark": "#7C3AED", "light": "#7C3AED", "highContrast": "#B69AFF", "highContrastLight": "#5920B0" } },
+      { "id": "extensionNest.group.blue", "description": "Extension Nest 蓝色分类图标", "defaults": { "dark": "#2563EB", "light": "#2563EB", "highContrast": "#86B7FF", "highContrastLight": "#1541A3" } },
+      { "id": "extensionNest.group.orange", "description": "Extension Nest 橙色分类图标", "defaults": { "dark": "#D97706", "light": "#D97706", "highContrast": "#FFBF69", "highContrastLight": "#874300" } },
+      { "id": "extensionNest.group.green", "description": "Extension Nest 绿色分类图标", "defaults": { "dark": "#059669", "light": "#059669", "highContrast": "#6EE7B7", "highContrastLight": "#006644" } },
+      { "id": "extensionNest.group.pink", "description": "Extension Nest 粉色分类图标", "defaults": { "dark": "#DB2777", "light": "#DB2777", "highContrast": "#FF9CCB", "highContrastLight": "#A01050" } },
+      { "id": "extensionNest.group.cyan", "description": "Extension Nest 青色分类图标", "defaults": { "dark": "#0EA5E9", "light": "#0EA5E9", "highContrast": "#7DD3FC", "highContrastLight": "#006A99" } }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        { "id": "extensionNest", "title": "Extension Nest", "icon": "media/extension-nest.svg" }
+      ]
+    },
     "views": {
-      "explorer": [
+      "extensionNest": [
         {
           "id": "extensionNest.groups",
           "name": "Extension Nest Demo",

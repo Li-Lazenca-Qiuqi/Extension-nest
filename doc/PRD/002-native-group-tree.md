@@ -14,9 +14,9 @@
 
 ## 2. 规则与交互
 
-分组视图放在 VS Code 原生 Explorer 侧边栏，不再自建网页侧边栏。树中仅有用户组与 Ungrouped，每个 ID 只显示一次；点击组筛选编辑器 Dashboard。刷新尽量保持展开、选中与滚动位置。
+分组视图放在 VS Code 原生 Extension Nest 侧边栏，不再自建网页侧边栏。树中仅有用户组与 Ungrouped，每个 ID 只显示一次；点击组筛选编辑器 Dashboard。刷新尽量保持展开、选中与滚动位置。
 
-- **侧边栏**：VS Code 原生 Explorer 中的 Extension Nest，原生 TreeView 显示自定义组和 Ungrouped；扩展在分组树中只显示一次。
+- **侧边栏**：VS Code 活动栏中的独立 Extension Nest 入口，原生 TreeView 显示自定义组和 Ungrouped；扩展在分组树中只显示一次。
 - **Dashboard**：点击侧边栏标题上的 Open Dashboard，在编辑器区域打开独立面板；已有面板再次点击时聚焦，不创建多个互相失步的实例。用户明确要求直接接入 VS Code，不得在 Webview 中再制作网页侧边栏或模拟 VS Code 外壳。
 - 侧边栏不额外挂一个重复的 All Installed 分组树；全量清单和状态查询集中到 Dashboard，避免看起来同一插件属于多个组。
 

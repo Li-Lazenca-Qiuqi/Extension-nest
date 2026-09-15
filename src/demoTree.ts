@@ -1,5 +1,11 @@
 import * as vscode from "vscode";
 import type { Action, DemoState, Extension, Group } from "../demo/src/models";
+import { groupColorToken } from "../demo/src/groupColors";
+
+/** 将现有分类色板映射到可被 VS Code 主题覆盖的图标颜色。 */
+function groupIconColor(color: string | undefined): vscode.ThemeColor {
+  return new vscode.ThemeColor(groupColorToken(color) ?? "descriptionForeground");
+}
 
 /** 组树节点，Ungrouped 使用 null 作为组 ID。 */
 export class DemoGroupNode {
@@ -121,7 +127,7 @@ export class DemoTreeProvider
       treeItem.contextValue = element.groupId === null ? "extensionNest.ungrouped" : "extensionNest.group";
       treeItem.description = `${extensions.length}`;
       treeItem.tooltip = `${element.label} (${extensions.length} demo extensions)`;
-      treeItem.iconPath = new vscode.ThemeIcon(element.groupId === null ? "inbox" : "folder");
+      treeItem.iconPath = new vscode.ThemeIcon(element.groupId === null ? "inbox" : "layers", groupIconColor(element.color));
       treeItem.command = {
         command: "extensionNest.openDashboard",
         title: "Open Extension Nest Dashboard",
@@ -151,7 +157,7 @@ export class DemoTreeProvider
       .filter((line): line is string => Boolean(line))
       .join("\n");
     treeItem.iconPath = extension.enabled
-      ? new vscode.ThemeIcon("extensions")
+      ? new vscode.ThemeIcon("extensions", groupIconColor(this.state.groups.find(group => group.id === element.groupId)?.color))
       : new vscode.ThemeIcon("circle-slash", new vscode.ThemeColor("disabledForeground"));
     treeItem.command = {
       command: "extensionNest.openDashboard",

@@ -7,6 +7,8 @@ interface DragSession {
 /** 在 Webview 内绘制真实尺寸的卡片预览，避免操作系统原生拖影附加透明度或遮罩。 */
 export function useCardDrag(onDrop:(ids:string[],groupId:string|null)=>void,onStart:()=>void){
  const [activeIds,setActiveIds]=useState<string[]>([]);
+ const [targetGroup,setTargetGroup]=useState<string|undefined>();
+ const targetGroupRef=useRef<string|undefined>(undefined);
  const session=useRef<DragSession|null>(null);const frame=useRef<number|null>(null);
  const callbacks=useRef({onDrop,onStart});callbacks.current={onDrop,onStart};
  /** 清理预览与鼠标捕获；取消时不提交归属修改。 */
@@ -17,6 +19,12 @@ export function useCardDrag(onDrop:(ids:string[],groupId:string|null)=>void,onSt
    if(current.source.hasPointerCapture?.(current.pointerId))current.source.releasePointerCapture(current.pointerId);
   }
   setActiveIds([]);
+  updateTarget(undefined);
+ }
+ /** 仅在跨越分组边界时更新界面，避免每个鼠标帧重绘全部卡片。 */
+ function updateTarget(groupId:string|undefined){
+  if(targetGroupRef.current===groupId)return;
+  targetGroupRef.current=groupId;setTargetGroup(groupId);
  }
  /** 使用视口坐标定位当前卡片网格内的目标组，不接受外部元素。 */
  function targetAt(current:DragSession){
@@ -32,6 +40,7 @@ export function useCardDrag(onDrop:(ids:string[],groupId:string|null)=>void,onSt
   const current=session.current;if(!current?.preview)return;
   const distance=current.y<40?-12:current.y>window.innerHeight-40?12:0;
   if(distance)window.scrollBy(0,distance);
+  updateTarget(targetAt(current));
   frame.current=requestAnimationFrame(scrollFrame);
  }
  useEffect(()=>{
@@ -50,6 +59,7 @@ export function useCardDrag(onDrop:(ids:string[],groupId:string|null)=>void,onSt
     frame.current=requestAnimationFrame(scrollFrame);
    }
    position(current);
+   updateTarget(targetAt(current));
   }
   function up(event:PointerEvent){
    const current=session.current;if(!current||event.pointerId!==current.pointerId)return;
@@ -70,5 +80,5 @@ export function useCardDrag(onDrop:(ids:string[],groupId:string|null)=>void,onSt
   event.preventDefault();event.currentTarget.setPointerCapture?.(event.pointerId);
   session.current={source:event.currentTarget,root,ids:[...ids],pointerId:event.pointerId,startX:event.clientX,startY:event.clientY,x:event.clientX,y:event.clientY,offsetX:event.clientX-rect.left,offsetY:event.clientY-rect.top,preview:null,cursor:document.body.style.cursor};
  }
- return {activeIds,begin};
+ return {activeIds,targetGroup,begin};
 }

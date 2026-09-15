@@ -32,6 +32,29 @@ it('uses a same-size 82% preview at the original cursor offset and restores on d
 it('moves a selection to Ungrouped from a nested target',()=>{
  const app=setup(['ms-python.python','ms-toolsai.jupyter']);target=app.element.querySelector('[data-group-section="ungrouped"] summary span');pointer(app.card,'pointerdown');pointer(document,'pointermove',250,300);pointer(document,'pointerup',250,300);expect(app.move).toHaveBeenCalledWith(['ms-python.python','ms-toolsai.jupyter'],null);
 });
+it('highlights one whole group across its heading, cards and gaps, then clears outside and on drop',()=>{
+ const app=setup();const writing=app.element.querySelector('[data-group-section="writing"]')!;
+ target=writing.querySelector('summary span');pointer(app.card,'pointerdown');
+ expect(app.element.querySelector('.is-drop-target')).toBeNull();
+ for(const hit of [target,writing.querySelector('.extension-card strong'),writing.querySelector('.extension-grid')]){
+  target=hit;pointer(document,'pointermove',240,310);
+  expect(app.element.querySelectorAll('.is-drop-target')).toHaveLength(1);expect(writing.classList.contains('is-drop-target')).toBe(true);
+ }
+ target=app.element.querySelector('[data-group-section="ungrouped"] summary');pointer(document,'pointermove',250,320);
+ expect(writing.classList.contains('is-drop-target')).toBe(false);
+ expect(app.element.querySelector('.is-drop-target')?.getAttribute('data-group-section')).toBe('ungrouped');
+ target=document.body;pointer(document,'pointermove',260,330);expect(app.element.querySelector('.is-drop-target')).toBeNull();
+ target=writing;pointer(document,'pointermove',240,310);pointer(document,'pointerup',240,310);
+ expect(app.element.querySelector('.is-drop-target')).toBeNull();expect(app.move).toHaveBeenCalledWith(['ms-python.python'],'writing');
+});
+it.each(['pointercancel','Escape','blur'])('clears the target highlight on %s without moving',reason=>{
+ const app=setup();target=app.element.querySelector('[data-group-section="writing"]');pointer(app.card,'pointerdown');pointer(document,'pointermove',240,310);
+ expect(app.element.querySelector('.is-drop-target')).not.toBeNull();
+ if(reason==='pointercancel')pointer(document,'pointercancel');
+ else if(reason==='Escape')act(()=>document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true})));
+ else act(()=>window.dispatchEvent(new Event('blur')));
+ expect(app.element.querySelector('.is-drop-target')).toBeNull();expect(app.move).not.toHaveBeenCalled();
+});
 it('keeps buttons clickable and never starts native or custom dragging from controls',()=>{
  const app=setup();for(const control of app.card.querySelectorAll('button,input')){pointer(control,'pointerdown');pointer(document,'pointermove',300,400);pointer(document,'pointerup',300,400);expect(document.querySelector('.card-drag-preview')).toBeNull()}
  act(()=>app.card.querySelector<HTMLButtonElement>('.status')!.click());expect(app.toggle).toHaveBeenCalledWith('ms-python.python');

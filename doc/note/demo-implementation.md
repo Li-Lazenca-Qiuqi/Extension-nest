@@ -67,3 +67,29 @@ Dashboard 默认按 Group 分区展开卡片，每组有标题和数量，Ungrou
 useCardDrag 使用单一 Pointer Events 路径，在 Webview 内绘制源卡片的同尺寸预览，opacity 固定 0.82，pointer-events 为 none。禁用源卡片原生 draggable/setDragImage，避免系统拖影的额外透明度与遮罩。坐标直接使用鼠标位置减去起拖偏移，样式无缩放、滤镜或动画，不提供手柄。功能控件不进入拖动；Escape、pointercancel、失焦和卸载组件会清理预览，只有有效 Group 内释放才移动。
 
 29 项测试验证预览大小、透明度、坐标跟随、归属与标签保留、多选、Ungrouped、按钮隔离和取消清理；类型检查、构建和打包通过。
+
+## 2026-09-15 原生树成员接收拖放
+
+插件拖到组内成员条目时，按目标插件的最新所属组执行移动，与拖到组标题使用同一动作；支持多选及 Ungrouped，保留 Tag。失效目标与无节点空白不写状态，组排序仍仅接受组标题。
+
+33 项测试、类型检查和构建通过，新增覆盖成员与标题结果等价、重复同组、批量移入 Ungrouped、最新归属和无效目标。尚未实测本次原生鼠标手势。TreeDragAndDropController 仅提供拖动及放下回调，未公开悬停高亮控制，因此当前不能将整组范围绘制成统一接收高亮；仍使用 VS Code 原生反馈。
+
+## 2026-09-15 Dashboard 目标区域高亮
+
+指针拖动时高亮整个目标 Group，使用主题拖放背景与细轮廓，保持卡片布局。标题、成员卡片和组内空白采用同一命中规则；滚动时更新目标，离开、松手、Escape、pointercancel 和失焦均清理。
+
+37 项测试、类型检查和构建通过。内置浏览器 localhost:5173 中实测 Python 拖入 AI Coding：标题、成员及空白均高亮同组，移出清除，放下后归属变化且高亮消失；截图检查无布局偏移，控制台无警告或错误。VS Code Webview 主题及跨面板拖放未在本次浏览器验证中覆盖。
+
+主题颜色补充：移除拖放高亮的固定灰色和绿色回退。背景依次使用 list.dropBackground、editorGroup.dropBackground，轮廓依次使用 contrastActiveBorder、focusBorder；主题未提供时从 currentColor 派生。切换主题由 Webview 的 CSS 变量自动更新，具体主题下的视觉效果待人工确认。
+
+## 2026-09-15 分类色线
+
+沿用持久化 Group.color，为分类标题设置 2px 分割线，并给全部所属卡片增加 3px 顶部色线；Ungrouped 使用主题 descriptionForeground。卡片色线依赖当前分组，不依赖扩展图标颜色；卡片自身保留颜色变量，拖动预览脱离分组容器后仍正确显示。新建组沿用已有自动配色逻辑。
+
+37 项测试和构建通过。内置浏览器检查五个分类的分割线与全部 14 张卡片的计算颜色一致，截图确认顶部细线与圆角正常。VS Code 主题下的观感待人工确认。
+
+## 2026-09-15 原生侧边栏分类图标
+
+活动栏入口补充：分组树从 Explorer 移到独立 Extension Nest 容器，使用 media/extension-nest.svg 的模块收纳图标；原视图 ID 和持久化状态键保持不变，Show Groups 继续聚焦原生树。安装说明与 PRD-002 已同步，宿主类型检查和构建通过。更早的 Explorer 容器描述属于历史。
+
+分类文件夹改为 layers，启用插件保留 extensions 图标并跟随分类颜色，禁用插件仍为灰色 circle-slash。package.json 注册六个 extensionNest.group.* 颜色，侧边栏与 Dashboard 通过 groupColors.ts 共用映射，支持高对比度默认色和主题覆盖；自定义色板以外颜色在原生树回退为中性色。37 项测试、宿主类型检查与构建通过，原生图标实际显示待人工验收。

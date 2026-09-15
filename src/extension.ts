@@ -104,7 +104,7 @@ class ExtensionNestHost implements vscode.Disposable {
     await this.focusGroupsView();
   }
 
-  /** 让 VS Code 聚焦现有 Explorer 容器中的原生分组视图。 */
+  /** 聚焦 Extension Nest 独立侧边栏中的原生分组视图。 */
   private async focusGroupsView(): Promise<void> {
     await vscode.commands.executeCommand(`${VIEW_ID}.focus`);
   }
