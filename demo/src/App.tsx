@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { Plus, ChevronDown, Check, FolderInput, Tag } from 'lucide-react';
+import { Plus, Columns2, ChevronDown, Check, FolderInput, Tag } from 'lucide-react';
 import Modal from './Modal';
+import GroupExpansionIcon from './GroupExpansionIcon';
 import ExtensionCards from './ExtensionCards';
 import TagEditor from './TagEditor';
 import { availableTags, filterExtensions } from './filterExtensions';
@@ -10,6 +11,8 @@ type DialogState={kind:'create'|'reset'|'move'|'tags';id?:string;ids?:string[]};
 /** Dashboard 的组与标签筛选彼此独立，所有修改统一交给宿主。 */
 export default function App(){
  const {state,ready,saved,hostError,nativeFilter,dispatch,openExtension,icons,isNative}=useDemoStore();
+ const [collapsedGroups,setCollapsedGroups]=useState<Record<string,boolean>>({});
+ const [twoColumns,setTwoColumns]=useState(false);
  const tagMenu=useRef<HTMLDetailsElement>(null);
  const [group,setGroup]=useState('all');const [status,setStatus]=useState('all');const [query,setQuery]=useState('');const [tagFilter,setTagFilter]=useState<string[]>([]);
  const [selected,setSelected]=useState<string[]>([]);const [menu,setMenu]=useState<string|null>(null);const [dialog,setDialog]=useState<DialogState|null>(null);
@@ -41,10 +44,10 @@ export default function App(){
    <input id="search" aria-label="Search extensions and tags" placeholder="Search names or tags..." value={query} onChange={e=>setQuery(e.target.value)}/>
    <select aria-label="Filter group" value={group} onChange={e=>{setGroup(e.target.value);if(e.target.value==='ungrouped')setStatus('all');setSelected([])}}><option value="all">All groups</option>{state.groups.map(g=><option key={g.id} value={g.id}>{g.name}</option>)}<option value="ungrouped">Ungrouped</option></select>
    <details ref={tagMenu} className="tag-filter"><summary><Tag size={13}/>Tags{tagFilter.length?` (${tagFilter.length})`:''}<ChevronDown size={12}/></summary><div className="tag-filter-options">{options.length?options.map(tag=><label key={tag}><input type="checkbox" checked={tagFilter.some(t=>t.toLocaleLowerCase()===tag.toLocaleLowerCase())} onChange={()=>toggleTag(tag)}/><span>{tag}</span></label>):<span>No tags</span>}</div></details>
-  </div><div className="header-actions"><button onClick={()=>open({kind:'create'})}><Plus size={15}/>Group</button></div></header>
+  </div><div className="header-actions"><button aria-label="Expand all groups" title="Expand all groups" onClick={()=>setCollapsedGroups({})}><GroupExpansionIcon expand/></button><button aria-label="Collapse all groups" title="Collapse all groups" onClick={()=>setCollapsedGroups(Object.fromEntries([...state.groups.map(g=>g.id),'ungrouped'].map(id=>[id,true])))}><GroupExpansionIcon/></button><button aria-label="Two-column groups" title="Two-column groups" aria-pressed={twoColumns} className={twoColumns?'view-toggle active':'view-toggle'} onClick={()=>setTwoColumns(value=>!value)}><Columns2 size={15}/></button><button onClick={()=>open({kind:'create'})}><Plus size={15}/>Group</button></div></header>
   <section aria-label="Installed extensions">
   {(query||group!=='all'||status!=='all'||selected.length>0||tagFilter.length>0)&&<div className="selection-bar"><span>{selected.length?`${selected.length} selected`:'Filters'}</span>{tagFilter.map(tag=><button key={tag} className="tag-chip" aria-label={`Clear tag filter ${tag}`} onClick={()=>toggleTag(tag)}>{tag} ×</button>)}{selected.length>0&&<><button onClick={()=>open({kind:'move',ids:[...selected]})}><FolderInput size={14}/>Move</button><button onClick={()=>open({kind:'tags',ids:[...selected]})}><Tag size={14}/>Edit tags</button></>}<button onClick={clear}>Clear</button></div>}
-  <ExtensionCards icons={icons} isNative={isNative} activeGroup={group} filtered={Boolean(query.trim()||status!=='all'||tagFilter.length)} rows={rows} groups={state.groups} selected={selected} onSelect={setSelected} onDropExtensions={(ids,groupId)=>{dispatch({type:'move',ids,groupId});setSelected([])}} menu={menu} onMenu={setMenu} onToggle={id=>{dispatch({type:'toggle',id});setMenu(null)}} onUpdate={id=>{dispatch({type:'update',id});setMenu(null)}} onMove={id=>open({kind:'move',id})} onOpenExtension={openExtension} onCopy={copy} onEditTags={id=>open({kind:'tags',id})} onFilterTag={toggleTag}/>
+  <ExtensionCards collapsedGroups={collapsedGroups} onToggleGroup={id=>setCollapsedGroups(current=>({...current,[id]:!current[id]}))} twoColumns={twoColumns} icons={icons} isNative={isNative} activeGroup={group} filtered={Boolean(query.trim()||status!=='all'||tagFilter.length)} rows={rows} groups={state.groups} selected={selected} onSelect={setSelected} onDropExtensions={(ids,groupId)=>{dispatch({type:'move',ids,groupId});setSelected([])}} menu={menu} onMenu={setMenu} onToggle={id=>{dispatch({type:'toggle',id});setMenu(null)}} onUpdate={id=>{dispatch({type:'update',id});setMenu(null)}} onMove={id=>open({kind:'move',id})} onOpenExtension={openExtension} onCopy={copy} onEditTags={id=>open({kind:'tags',id})} onFilterTag={toggleTag}/>
   </section></main>
   <footer><span>Demo · Sample data</span><div><button onClick={()=>open({kind:'reset'})}>Reset demo</button><span className={saved?'saved':'danger-text'}><Check size={14}/>{!ready?'Connecting…':saved?'Saved':'Save failed'}</span></div></footer>
   {(hostError||notice)&&<div className="toast" role="status">{hostError||notice}</div>}

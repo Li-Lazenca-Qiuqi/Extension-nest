@@ -7,17 +7,17 @@ import { groupExtensions } from './groupExtensions';
 import { groupCssColor } from './groupColors';
 import { useCardDrag } from './useCardDrag';
 import { EXTENSION_DRAG_MIME, parseDraggedIds } from './dragPayload';
-interface Props { icons?:Record<string,string>; isNative?:boolean; activeGroup:string; filtered:boolean; rows:Extension[]; groups:Group[]; selected:string[]; onSelect:(ids:string[])=>void; onDropExtensions:(ids:string[],groupId:string|null)=>void; menu:string|null; onMenu:(id:string|null)=>void; onToggle:(id:string)=>void; onUpdate:(id:string)=>void; onEditTags:(id:string)=>void; onFilterTag:(tag:string)=>void; onMove:(id:string)=>void; onOpenExtension:(id:string)=>void; onCopy:(id:string)=>void }
+interface Props { collapsedGroups?:Record<string,boolean>; onToggleGroup?:(id:string)=>void; twoColumns?:boolean; icons?:Record<string,string>; isNative?:boolean; activeGroup:string; filtered:boolean; rows:Extension[]; groups:Group[]; selected:string[]; onSelect:(ids:string[])=>void; onDropExtensions:(ids:string[],groupId:string|null)=>void; menu:string|null; onMenu:(id:string|null)=>void; onToggle:(id:string)=>void; onUpdate:(id:string)=>void; onEditTags:(id:string)=>void; onFilterTag:(tag:string)=>void; onMove:(id:string)=>void; onOpenExtension:(id:string)=>void; onCopy:(id:string)=>void }
 /** 以紧凑卡片展示插件，保留鼠标选择、移组和管理操作。 */
 export default function ExtensionCards(p:Props) {
  const drag=useCardDrag(p.onDropExtensions,()=>p.onMenu(null));
  const sections=groupExtensions(p.groups,p.rows,p.activeGroup,p.filtered);
  const select=(id:string,additive:boolean)=>p.onSelect(additive?(p.selected.includes(id)?p.selected.filter(value=>value!==id):[...p.selected,id]):[id]);
  const groupStyle=(id:string)=>({'--group-color':groupCssColor(p.groups.find(group=>group.id===id)?.color)} as CSSProperties);
- return <div className="cards-region">
- {sections.map(section=><details className={`extension-section${drag.targetGroup===section.id?' is-drop-target':''}`} style={groupStyle(section.id)} key={section.id} open data-group-section={section.id}
+ return <div className={`cards-region${p.twoColumns?' groups-two-columns':''}`}>
+ {sections.map(section=><details className={`extension-section${drag.targetGroup===section.id?' is-drop-target':''}`} style={groupStyle(section.id)} key={section.id} open={!p.collapsedGroups?.[section.id]} data-group-section={section.id}
  onDragOver={event=>{if(Array.from(event.dataTransfer.types).includes(EXTENSION_DRAG_MIME)){event.preventDefault();event.dataTransfer.dropEffect='move'}}}
- onDrop={event=>{event.preventDefault();event.stopPropagation();const ids=parseDraggedIds(event.dataTransfer.getData(EXTENSION_DRAG_MIME));if(ids)p.onDropExtensions(ids,section.id==='ungrouped'?null:section.id)}}><summary><span>{section.name}</span><small>{section.extensions.length}</small></summary><div className="extension-grid">{section.extensions.map(ext=><article key={ext.id} data-extension={ext.id} aria-label={ext.name} draggable={false} onDragStart={event=>event.preventDefault()}
+ onDrop={event=>{event.preventDefault();event.stopPropagation();const ids=parseDraggedIds(event.dataTransfer.getData(EXTENSION_DRAG_MIME));if(ids)p.onDropExtensions(ids,section.id==='ungrouped'?null:section.id)}}><summary onClick={event=>{if(p.onToggleGroup){event.preventDefault();p.onToggleGroup(section.id)}}}><span>{section.name}</span><small>{section.extensions.length}</small></summary><div className="extension-grid">{section.extensions.map(ext=><article key={ext.id} data-extension={ext.id} aria-label={ext.name} draggable={false} onDragStart={event=>event.preventDefault()}
  tabIndex={0} onKeyDown={event=>{if(event.target===event.currentTarget&&(event.key===' '||event.key==='Enter')){event.preventDefault();select(ext.id,event.ctrlKey||event.metaKey)}}}
  onClickCapture={event=>{
   if(drag.consumeClick()){event.preventDefault();event.stopPropagation();return}

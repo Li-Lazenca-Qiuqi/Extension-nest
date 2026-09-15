@@ -46,3 +46,10 @@ body.vscode-light{color-scheme:light}
 .tag-filter-options input[type=checkbox]{width:14px;min-width:14px;height:14px;min-height:14px;flex:0 0 14px;margin:0;padding:0}
 
 .tag-filter-options{width:max-content;min-width:100%;max-width:min(280px,calc(100vw - 32px))}.tag-filter-options label>span{min-width:0;overflow-wrap:anywhere}
+
+/* 按组从左到右排列，保留 DOM 阅读顺序及整组拖放范围。 */
+.groups-two-columns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 18px;align-items:start}
+.groups-two-columns>.extension-section{min-width:0}
+.groups-two-columns>.empty{grid-column:1/-1}
+.view-toggle.active{background:var(--vscode-list-activeSelectionBackground,#254b39);color:var(--vscode-list-activeSelectionForeground,#e4f3e9);border-color:var(--vscode-focusBorder,#8fcfa8)}
+@media(max-width:760px){.groups-two-columns{grid-template-columns:minmax(0,1fr)}}
