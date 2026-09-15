@@ -189,22 +189,33 @@ export class DemoTreeProvider
     }
   }
 
-  /** 将扩展拖到组中移动，或将组拖到组上重新排序。 */
+  /** 组标题与组内扩展均接收扩展移动；组排序仍以组标题为目标。 */
   async handleDrop(
     target: DemoTreeNode | undefined,
     dataTransfer: vscode.DataTransfer,
     _token: vscode.CancellationToken,
   ): Promise<void> {
-    if (!isDemoGroupNode(target)) {
+    if (!target) {
       return;
     }
 
     const extensionPayload = await this.readPayload(dataTransfer, "application/vnd.extension-nest.demo-extension");
     if (extensionPayload) {
+      // 使用最新归属，避免拖动期间目标条目移组后仍写入旧组。
+      const groupId = isDemoGroupNode(target)
+        ? target.groupId
+        : this.state.extensions.find((extension) => extension.id === target.extension.id)?.groupId;
+      if (groupId === undefined || (groupId !== null && !this.state.groups.some((group) => group.id === groupId))) {
+        return;
+      }
       const ids = extensionPayload.ids.filter((id) => this.state.extensions.some((extension) => extension.id === id));
       if (ids.length > 0) {
-        await this.dispatch({ type: "move", ids, groupId: target.groupId });
+        await this.dispatch({ type: "move", ids, groupId });
       }
+      return;
+    }
+
+    if (!isDemoGroupNode(target)) {
       return;
     }
 

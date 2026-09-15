@@ -31,6 +31,61 @@ describe('native tree drag controller',()=>{
  });
 });
 
+it.each(['writing', null])('moves multiple extensions onto a member of %s exactly as onto its heading', async groupId => {
+ const initial = structuredClone(seedState);
+ const sources = initial.extensions.filter(extension => extension.groupId === 'python-data').slice(0, 2);
+ sources[0].tags = ['Research'];
+ const member = initial.extensions.find(extension => extension.groupId === groupId)!;
+ const run = async (ontoMember: boolean) => {
+  let state = structuredClone(initial);
+  const tree = new DemoTreeProvider(state, async action => { state = reducer(state, action as Parameters<typeof reducer>[1]); tree.setState(state); });
+  const transfer = new vscode.DataTransfer();
+  tree.handleDrag(sources.map(extension => new DemoExtensionNode(extension, extension.groupId)), transfer as never, {} as never);
+  const target = ontoMember ? new DemoExtensionNode(member, member.groupId) : new DemoGroupNode(groupId, 'Target', undefined);
+  await tree.handleDrop(target, transfer as never, {} as never);
+  const moved = structuredClone(state);
+  await tree.handleDrop(target, transfer as never, {} as never);
+  expect(state).toEqual(moved);
+  expect(state.extensions.filter(extension => sources.some(source => source.id === extension.id)).map(extension => extension.groupId)).toEqual([groupId, groupId]);
+  expect(state.extensions.find(extension => extension.id === sources[0].id)?.tags).toEqual(['Research']);
+  return state;
+ };
+ expect(await run(true)).toEqual(await run(false));
+});
+
+it('uses current target membership and ignores removed targets and root space', async () => {
+ let state = structuredClone(seedState);
+ const member = state.extensions.find(extension => extension.groupId === 'writing')!;
+ const target = new DemoExtensionNode(member, member.groupId);
+ const source = state.extensions.find(extension => extension.groupId === 'python-data')!;
+ const tree = new DemoTreeProvider(state, async action => { state = reducer(state, action as Parameters<typeof reducer>[1]); tree.setState(state); });
+ const transfer = new vscode.DataTransfer();
+ tree.handleDrag([new DemoExtensionNode(source, source.groupId)], transfer as never, {} as never);
+ state = reducer(state, { type: 'move', ids: [member.id], groupId: 'ai-coding' });
+ tree.setState(state);
+ await tree.handleDrop(target, transfer as never, {} as never);
+ expect(state.extensions.find(extension => extension.id === source.id)?.groupId).toBe('ai-coding');
+ state = { ...state, extensions: state.extensions.filter(extension => extension.id !== member.id) };
+ tree.setState(state);
+ const before = state;
+ await tree.handleDrop(target, transfer as never, {} as never);
+ await tree.handleDrop(undefined, transfer as never, {} as never);
+ expect(state).toBe(before);
+});
+
+it('ignores group drags and external payloads dropped onto an extension', async () => {
+ let state = structuredClone(seedState);
+ const tree = new DemoTreeProvider(state, async action => { state = reducer(state, action as Parameters<typeof reducer>[1]); });
+ const member = state.extensions[0];
+ const target = new DemoExtensionNode(member, member.groupId);
+ const before = state;
+ const transfer = new vscode.DataTransfer();
+ tree.handleDrag([new DemoGroupNode('writing', 'Writing', undefined)], transfer as never, {} as never);
+ await tree.handleDrop(target, transfer as never, {} as never);
+ await tree.handleDrop(target, new vscode.DataTransfer() as never, {} as never);
+ expect(state).toBe(before);
+});
+
 it('reads asynchronous native drag data when value is unavailable',async()=>{
  let state=structuredClone(seedState);const tree=new DemoTreeProvider(state,async action=>{state=reducer(state,action as Parameters<typeof reducer>[1])});
  const transfer=new vscode.DataTransfer();transfer.set('application/vnd.extension-nest.demo-extension',{value:undefined,asString:async()=>JSON.stringify({ids:['ms-toolsai.jupyter']})});
