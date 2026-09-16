@@ -5,10 +5,11 @@ interface DragSession {
  preview:HTMLElement|null; cursor:string;
 }
 /** 在 Webview 内绘制真实尺寸的卡片预览，避免操作系统原生拖影附加透明度或遮罩。 */
-export function useCardDrag(onDrop:(ids:string[],groupId:string|null)=>void,onStart:()=>void){
+export function useCardDrag(onDrop:(ids:string[],groupId:string|null,beforeId?:string|null)=>void,onStart:()=>void){
  const [activeIds,setActiveIds]=useState<string[]>([]);
  const [targetGroup,setTargetGroup]=useState<string|undefined>();
  const targetGroupRef=useRef<string|undefined>(undefined);
+ const [beforeId,setBeforeId]=useState<string|null>(null);
  const session=useRef<DragSession|null>(null);const frame=useRef<number|null>(null);
  const suppressClick=useRef(false);
  const callbacks=useRef({onDrop,onStart});callbacks.current={onDrop,onStart};
@@ -20,7 +21,7 @@ export function useCardDrag(onDrop:(ids:string[],groupId:string|null)=>void,onSt
    if(current.source.hasPointerCapture?.(current.pointerId))current.source.releasePointerCapture(current.pointerId);
   }
   setActiveIds([]);
-  updateTarget(undefined);
+  updateTarget(undefined);setBeforeId(null);
  }
  /** 仅在跨越分组边界时更新界面，避免每个鼠标帧重绘全部卡片。 */
  function updateTarget(groupId:string|undefined){
@@ -30,7 +31,13 @@ export function useCardDrag(onDrop:(ids:string[],groupId:string|null)=>void,onSt
  /** 使用视口坐标定位当前卡片网格内的目标组，不接受外部元素。 */
  function targetAt(current:DragSession){
   const target=document.elementFromPoint(current.x,current.y)?.closest<HTMLElement>('[data-group-section]');
-  return target&&current.root.contains(target)?target.dataset.groupSection:undefined;
+  if (!target || !current.root.contains(target)) { setBeforeId(null); return undefined; }
+  setBeforeId(insertionAt(target,current));
+  return target.dataset.groupSection;
+ }
+ /** 按网格的行与卡片中点定位插入锚点，多选中的卡片不作为锚点。 */
+ function insertionAt(target:Element,current:DragSession):string|null {
+  return findCardInsertion(target,current.ids,current.x,current.y);
  }
  /** 预览位置保留起拖点相对卡片的偏移，不缩放、不旋转。 */
  function position(current:DragSession){
@@ -66,8 +73,10 @@ export function useCardDrag(onDrop:(ids:string[],groupId:string|null)=>void,onSt
   function up(event:PointerEvent){
    const current=session.current;if(!current||event.pointerId!==current.pointerId)return;
    current.x=event.clientX;current.y=event.clientY;
-   const target=current.preview?targetAt(current):undefined;const ids=current.ids;finish();
-   if(target!==undefined)callbacks.current.onDrop(ids,target==='ungrouped'?null:target);
+   const target=current.preview?targetAt(current):undefined;const ids=current.ids;
+   const section=document.elementFromPoint(current.x,current.y)?.closest('[data-group-section]');
+   const anchor=section?insertionAt(section,current):null;finish();
+   if(target!==undefined)callbacks.current.onDrop(ids,target==='ungrouped'?null:target,anchor);
   }
   function cancel(){finish()}
   function key(event:KeyboardEvent){if(event.key==='Escape'&&session.current){event.preventDefault();finish()}}
@@ -85,5 +94,15 @@ export function useCardDrag(onDrop:(ids:string[],groupId:string|null)=>void,onSt
  }
  /** 拖动结束生成的 click 不能把刚移动的多选集合重新变为单选。 */
  function consumeClick(){const suppressed=suppressClick.current;suppressClick.current=false;return suppressed}
- return {activeIds,targetGroup,begin,consumeClick};
+ return {activeIds,targetGroup,beforeId,begin,consumeClick};
+}
+
+/** 插入到落点之后的第一张卡片前；标题放到组首，尾部空白放到组尾。 */
+export function findCardInsertion(target:Element,ids:string[],x:number,y:number):string|null {
+ const cards=Array.from(target.querySelectorAll<HTMLElement>('[data-extension]')).filter(card=>!ids.includes(card.dataset.extension!));
+ for(const card of cards){
+  const rect=card.getBoundingClientRect();
+  if(rect.height>0&&(y<rect.top||(y<=rect.bottom&&x<rect.left+rect.width/2)))return card.dataset.extension!;
+ }
+ return null;
 }

@@ -85,11 +85,31 @@ class ExtensionNestHost implements vscode.Disposable {
     register("extensionNest.createGroup", () => this.createGroup());
     register("extensionNest.renameGroup", (value?: unknown) => this.renameGroup(value));
     register("extensionNest.deleteGroup", (value?: unknown) => this.deleteGroup(value));
-    register("extensionNest.moveToGroup", (value?: unknown) => this.moveToGroup(value));
     register("extensionNest.toggle", (value?: unknown) => this.toggleExtension(value));
     register("extensionNest.update", (value?: unknown) => this.updateExtension(value));
     register("extensionNest.setTags", (value?: unknown) => this.setTags(value));
+    register("extensionNest.groupUp", (value?:unknown)=>this.shiftGroup(value,-1));
+    register("extensionNest.groupDown", (value?:unknown)=>this.shiftGroup(value,1));
+    register("extensionNest.extensionUp", (value?:unknown)=>this.shiftExtension(value,-1));
+    register("extensionNest.extensionDown", (value?:unknown)=>this.shiftExtension(value,1));
+    register("extensionNest.sortGroups", async()=>{
+      const choice=await vscode.window.showQuickPick(['Name A–Z','Name Z–A'],{placeHolder:'Sort groups'});
+      if(choice)await this.dispatchAction({type:'sortGroups',direction:choice==='Name A–Z'?1:-1});
+    });
+    register("extensionNest.sortExtensions", async(value?:unknown)=>{
+      const groupId=isDemoGroupNode(value)?value.groupId:undefined;if(groupId===undefined)return;
+      const choices=[{label:'Name A–Z',field:'name',direction:1},{label:'Name Z–A',field:'name',direction:-1},{label:'Publisher A–Z',field:'publisher',direction:1},{label:'Publisher Z–A',field:'publisher',direction:-1},{label:'ID A–Z',field:'id',direction:1},{label:'ID Z–A',field:'id',direction:-1}];
+      const choice=await vscode.window.showQuickPick(choices,{placeHolder:'Sort extensions in group'});
+      if(choice)await this.dispatchAction({type:'sortExtensions',groupId,field:choice.field,direction:choice.direction});
+    });
     register("extensionNest.resetDemo", () => this.resetDemo());
+  }
+
+  private async shiftGroup(value:unknown,direction:-1|1):Promise<void>{
+    const id=getGroupId(value);if(id)await this.dispatchAction({type:'shiftGroup',id,direction});
+  }
+  private async shiftExtension(value:unknown,direction:-1|1):Promise<void>{
+    const id=getExtensionId(value,this.state);if(id)await this.dispatchAction({type:'shiftExtension',id,direction});
   }
 
   /** 打开编辑器 Dashboard，并在原生组点击时传递对应筛选。 */
@@ -159,30 +179,6 @@ class ExtensionNestHost implements vscode.Disposable {
     );
     if (choice === "Delete Demo Group") {
       await this.dispatchAction({ type: "deleteGroup", id: group.id });
-    }
-  }
-
-  /** 选择一个演示目标组并批量移动指定演示扩展。 */
-  private async moveToGroup(value?: unknown): Promise<void> {
-    const ids = getExtensionIds(value, this.state);
-    if (ids.length === 0) {
-      return;
-    }
-
-    const items = [
-      { label: "Ungrouped", description: "Remove demo group assignment", groupId: null as string | null },
-      ...this.state.groups.map((group) => ({
-        label: group.name,
-        description: `${this.countExtensions(group.id)} demo extensions`,
-        groupId: group.id,
-      })),
-    ];
-    const selected = await vscode.window.showQuickPick(items, {
-      placeHolder: "Move demo extension(s) to a group",
-      ignoreFocusOut: true,
-    });
-    if (selected) {
-      await this.dispatchAction({ type: "move", ids, groupId: selected.groupId });
     }
   }
 
@@ -348,7 +344,9 @@ function parseAction(value: unknown, state: DemoState): Action | undefined {
       if (groupId !== null && (typeof groupId !== "string" || !groupIds.has(groupId))) {
         return undefined;
       }
-      return { type: "move", ids, groupId };
+      const beforeId = value.beforeId;
+      if (beforeId !== undefined && beforeId !== null && (typeof beforeId !== "string" || ids.includes(beforeId) || !state.extensions.some(e => e.id === beforeId && e.groupId === groupId))) return undefined;
+      return { type: "move", ids, groupId, beforeId };
     }
     case "toggle":
       return isNonEmptyString(value.id) && extensionIds.has(value.id)
@@ -387,9 +385,21 @@ function parseAction(value: unknown, state: DemoState): Action | undefined {
         : undefined;
     case "reorderGroup":
       return isNonEmptyString(value.id) && isNonEmptyString(value.targetId)
-        && groupIds.has(value.id) && groupIds.has(value.targetId) && value.id !== value.targetId
-        ? { type: "reorderGroup", id: value.id, targetId: value.targetId }
+        && groupIds.has(value.id) && groupIds.has(value.targetId) && value.id !== value.targetId && (value.after === undefined || typeof value.after === "boolean")
+        ? { type: "reorderGroup", id: value.id, targetId: value.targetId, after: value.after as boolean | undefined }
         : undefined;
+    case "shiftGroup":
+      return typeof value.id==='string'&&groupIds.has(value.id)&&(value.direction===1||value.direction===-1)
+        ? {type:'shiftGroup',id:value.id,direction:value.direction}:undefined;
+    case "sortGroups":
+      return value.direction===1||value.direction===-1?{type:'sortGroups',direction:value.direction}:undefined;
+    case "shiftExtension":
+      return typeof value.id==='string'&&extensionIds.has(value.id)&&(value.direction===1||value.direction===-1)
+        ? {type:'shiftExtension',id:value.id,direction:value.direction}:undefined;
+    case "sortExtensions":
+      return (value.groupId===null||typeof value.groupId==='string'&&groupIds.has(value.groupId))
+        &&(value.field==='name'||value.field==='publisher'||value.field==='id')&&(value.direction===1||value.direction===-1)
+        ? {type:'sortExtensions',groupId:value.groupId,field:value.field,direction:value.direction}:undefined;
     case "reset":
       return { type: "reset" };
     default:

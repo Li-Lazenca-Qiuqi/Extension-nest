@@ -61,12 +61,22 @@ function hasValidTargetGroup(state: DemoState, groupId: string | null): boolean 
 }
 
 /** 把选中的扩展一次性移动到唯一目标组。 */
-function moveExtensions(state: DemoState, ids: string[], groupId: string | null): DemoState {
+function moveExtensions(state: DemoState, ids: string[], groupId: string | null, beforeId?: string | null): DemoState {
   if (!hasValidTargetGroup(state, groupId) || ids.length === 0) {
     return state;
   }
 
   const selectedIds = new Set(ids);
+  if (beforeId !== undefined) {
+    if (beforeId !== null && !state.extensions.some(e => e.id === beforeId && e.groupId === groupId && !selectedIds.has(e.id))) return state;
+    const moving = state.extensions.filter(e => selectedIds.has(e.id)).map(e => ({...e, groupId}));
+    if (!moving.length) return state;
+    const extensions = state.extensions.filter(e => !selectedIds.has(e.id));
+    const index = beforeId === null ? extensions.length : extensions.findIndex(e => e.id === beforeId);
+    extensions.splice(index, 0, ...moving);
+    return {...state, extensions};
+  }
+
   let changed = false;
   const extensions = state.extensions.map((extension) => {
     if (!selectedIds.has(extension.id) || extension.groupId === groupId) {
@@ -180,7 +190,7 @@ function deleteGroup(state: DemoState, id: string): DemoState {
 }
 
 /** 按目标组的位置重新排列组，Ungrouped 不在数组中因此保持固定。 */
-function reorderGroup(state: DemoState, id: string, targetId: string): DemoState {
+function reorderGroup(state: DemoState, id: string, targetId: string, after = false): DemoState {
   const sourceIndex = state.groups.findIndex((group) => group.id === id);
   const targetIndex = state.groups.findIndex((group) => group.id === targetId);
   if (sourceIndex < 0 || targetIndex < 0 || sourceIndex === targetIndex) {
@@ -190,7 +200,7 @@ function reorderGroup(state: DemoState, id: string, targetId: string): DemoState
   const groups = [...state.groups];
   const [source] = groups.splice(sourceIndex, 1);
   const insertionIndex = groups.findIndex((group) => group.id === targetId);
-  groups.splice(insertionIndex, 0, source);
+  groups.splice(insertionIndex + (after ? 1 : 0), 0, source);
   return { ...state, groups };
 }
 
@@ -338,7 +348,7 @@ export function saveState(state: DemoState): boolean {
 export function reducer(state: DemoState, action: Action): DemoState {
   switch (action.type) {
     case "move":
-      return moveExtensions(state, action.ids, action.groupId);
+      return moveExtensions(state, action.ids, action.groupId, action.beforeId);
     case "toggle":
       return toggleExtension(state, action.id);
     case "update":
@@ -352,7 +362,25 @@ export function reducer(state: DemoState, action: Action): DemoState {
     case "deleteGroup":
       return deleteGroup(state, action.id);
     case "reorderGroup":
-      return reorderGroup(state, action.id, action.targetId);
+      return reorderGroup(state, action.id, action.targetId, action.after);
+    case "shiftGroup": {
+      const groups=[...state.groups];const index=groups.findIndex(g=>g.id===action.id);const target=index+action.direction;
+      if(index<0||target<0||target>=groups.length)return state;
+      [groups[index],groups[target]]=[groups[target],groups[index]];return {...state,groups};
+    }
+    case "sortGroups":
+      return {...state,groups:[...state.groups].sort((a,b)=>action.direction*(a.name.localeCompare(b.name)||a.id.localeCompare(b.id)))};
+    case "sortExtensions": {
+      if(!hasValidTargetGroup(state,action.groupId))return state;
+      const sorted=state.extensions.filter(e=>e.groupId===action.groupId).sort((a,b)=>action.direction*(a[action.field].localeCompare(b[action.field])||a.id.localeCompare(b.id)));
+      let index=0;return {...state,extensions:state.extensions.map(e=>e.groupId===action.groupId?sorted[index++]:e)};
+    }
+    case "shiftExtension": {
+      const extensions=[...state.extensions];const index=extensions.findIndex(e=>e.id===action.id);if(index<0)return state;
+      const peers=extensions.map((e,i)=>e.groupId===extensions[index].groupId?i:-1).filter(i=>i>=0);
+      const target=peers[peers.indexOf(index)+action.direction];if(target===undefined)return state;
+      [extensions[index],extensions[target]]=[extensions[target],extensions[index]];return {...state,extensions};
+    }
     case "reset":
       return cloneState(seedState);
   }

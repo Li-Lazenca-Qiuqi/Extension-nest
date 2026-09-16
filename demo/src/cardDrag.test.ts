@@ -13,7 +13,7 @@ afterEach(()=>{cleanup();document.body.innerHTML='';vi.unstubAllGlobals();target
 function setup(selected:string[]=[]){
  let state=structuredClone(seedState);const element=document.createElement('div');document.body.append(element);const root=createRoot(element);const toggle=vi.fn();const openExtension=vi.fn();
  const move=vi.fn((ids:string[],groupId:string|null)=>{state=reducer(state,{type:'move',ids,groupId});render()});
- function render(){root.render(createElement(ExtensionCards,{activeGroup:'all',filtered:false,rows:state.extensions,groups:state.groups,selected,menu:null,onSelect:ids=>{selected=ids;render()},onMenu:()=>{},onToggle:toggle,onUpdate:()=>{},onEditTags:()=>{},onFilterTag:()=>{},onMove:()=>{},onOpenExtension:openExtension,onCopy:()=>{},onDropExtensions:move}))}
+ function render(){root.render(createElement(ExtensionCards,{activeGroup:'all',filtered:false,rows:state.extensions,groups:state.groups,selected,menu:null,onSelect:ids=>{selected=ids;render()},onMenu:()=>{},onToggle:toggle,onUpdate:()=>{},onEditTags:()=>{},onFilterTag:()=>{},onOpenExtension:openExtension,onCopy:()=>{},onDropExtensions:move}))}
  act(render);cleanup=()=>act(()=>root.unmount());
  const card=element.querySelector<HTMLElement>('[data-extension="ms-python.python"]')!;
  card.getBoundingClientRect=()=>({x:100,y:200,left:100,top:200,right:400,bottom:340,width:300,height:140,toJSON:()=>({})});
@@ -26,11 +26,11 @@ it('uses a same-size 82% preview at the original cursor offset and restores on d
  const preview=document.querySelector<HTMLElement>('.card-drag-preview')!;
  expect(preview.style.width).toBe('300px');expect(preview.style.height).toBe('140px');expect(preview.style.opacity).toBe('0.82');expect(preview.style.left).toBe('180px');expect(preview.style.top).toBe('280px');expect(preview.style.pointerEvents).toBe('none');expect(app.card.draggable).toBe(false);
  pointer(document,'pointermove',240,310);expect(preview.style.left).toBe('220px');expect(preview.style.top).toBe('290px');
- pointer(document,'pointerup',240,310);expect(app.move).toHaveBeenCalledWith(['ms-python.python'],'writing');expect(document.querySelector('.card-drag-preview')).toBeNull();
+ pointer(document,'pointerup',240,310);expect(app.move).toHaveBeenCalledWith(['ms-python.python'],'writing',null);expect(document.querySelector('.card-drag-preview')).toBeNull();
  expect(app.state().extensions.find(e=>e.id==='ms-python.python')?.tags).toEqual(seedState.extensions.find(e=>e.id==='ms-python.python')?.tags);
 });
 it('moves a selection to Ungrouped from a nested target',()=>{
- const app=setup(['ms-python.python','ms-toolsai.jupyter']);target=app.element.querySelector('[data-group-section="ungrouped"] summary span');pointer(app.card,'pointerdown');pointer(document,'pointermove',250,300);pointer(document,'pointerup',250,300);expect(app.move).toHaveBeenCalledWith(['ms-python.python','ms-toolsai.jupyter'],null);
+ const app=setup(['ms-python.python','ms-toolsai.jupyter']);target=app.element.querySelector('[data-group-section="ungrouped"] summary span');pointer(app.card,'pointerdown');pointer(document,'pointermove',250,300);pointer(document,'pointerup',250,300);expect(app.move).toHaveBeenCalledWith(['ms-python.python','ms-toolsai.jupyter'],null,null);
 });
 it('highlights one whole group across its heading, cards and gaps, then clears outside and on drop',()=>{
  const app=setup();const writing=app.element.querySelector('[data-group-section="writing"]')!;
@@ -45,7 +45,7 @@ it('highlights one whole group across its heading, cards and gaps, then clears o
  expect(app.element.querySelector('.is-drop-target')?.getAttribute('data-group-section')).toBe('ungrouped');
  target=document.body;pointer(document,'pointermove',260,330);expect(app.element.querySelector('.is-drop-target')).toBeNull();
  target=writing;pointer(document,'pointermove',240,310);pointer(document,'pointerup',240,310);
- expect(app.element.querySelector('.is-drop-target')).toBeNull();expect(app.move).toHaveBeenCalledWith(['ms-python.python'],'writing');
+ expect(app.element.querySelector('.is-drop-target')).toBeNull();expect(app.move).toHaveBeenCalledWith(['ms-python.python'],'writing',null);
 });
 it.each(['pointercancel','Escape','blur'])('clears the target highlight on %s without moving',reason=>{
  const app=setup();target=app.element.querySelector('[data-group-section="writing"]');pointer(app.card,'pointerdown');pointer(document,'pointermove',240,310);
@@ -76,7 +76,7 @@ it('selects one card, toggles with Ctrl and keeps native title navigation separa
  const chosen=()=>Array.from(app.element.querySelectorAll('.selected')).map(element=>element.getAttribute('data-extension'));
  expect(app.element.querySelectorAll('input[type="checkbox"]')).toHaveLength(0);
  click(app.card);expect(chosen()).toEqual(['ms-python.python']);
- click(second,true);expect(chosen()).toEqual(['ms-python.python','ms-toolsai.jupyter']);
+ click(second,true);expect(new Set(chosen())).toEqual(new Set(['ms-python.python','ms-toolsai.jupyter']));
  click(app.card,true);expect(chosen()).toEqual(['ms-toolsai.jupyter']);
  click(app.card.querySelector('.extension-name')!,true);expect(chosen()).toHaveLength(2);expect(app.openExtension).not.toHaveBeenCalled();
  click(app.card.querySelector('.extension-name')!);expect(chosen()).toEqual(['ms-python.python']);expect(app.openExtension).toHaveBeenCalledWith('ms-python.python');
@@ -86,6 +86,6 @@ it('does not turn a completed multi-card drag into a single selection',()=>{
  pointer(app.card,'pointerdown');pointer(document,'pointermove',240,310);pointer(document,'pointerup',240,310);
  const moved=app.element.querySelector('[data-extension="ms-python.python"]')!;
  act(()=>moved.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true})));
- expect(app.move).toHaveBeenCalledWith(['ms-python.python','ms-toolsai.jupyter'],'writing');
+ expect(app.move).toHaveBeenCalledWith(['ms-python.python','ms-toolsai.jupyter'],'writing',null);
  expect(app.element.querySelectorAll('.selected')).toHaveLength(2);
 });

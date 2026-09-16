@@ -188,11 +188,10 @@ const extensions: Extension[] = [
   },
 ];
 
-const displayOrder = ["Python", "Pylance", "Jupyter", "Ruff", "GitHub Copilot", "Claude Code", "Codex", "ESLint", "Prettier", "GitLens", "LaTeX Workshop", "Markdown All in One", "Rainbow CSV", "Material Icon Theme"];
 
 /** 演示初始状态；状态操作会通过副本使用这份数据。 */
 export const seedState: DemoState = {
   schemaVersion: 1,
   groups,
-  extensions: [...extensions].sort((a, b) => displayOrder.indexOf(a.name) - displayOrder.indexOf(b.name)),
+  extensions: [...extensions].sort((a, b) => a.name.localeCompare(b.name) || a.id.localeCompare(b.id)),
 };

@@ -108,10 +108,6 @@ export class DemoTreeProvider
 
     return this.state.extensions
       .filter((extension) => extension.groupId === element.groupId)
-      .sort((left, right) => {
-        const nameOrder = left.name.localeCompare(right.name);
-        return nameOrder === 0 ? left.id.localeCompare(right.id) : nameOrder;
-      })
       .map((extension) => new DemoExtensionNode(extension, element.groupId));
   }
 

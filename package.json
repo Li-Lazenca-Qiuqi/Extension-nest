@@ -136,11 +136,6 @@
         "category": "Extension Nest Demo"
       },
       {
-        "command": "extensionNest.moveToGroup",
-        "title": "Move Demo Extension to Group",
-        "category": "Extension Nest Demo"
-      },
-      {
         "command": "extensionNest.toggle",
         "title": "Toggle Demo Extension",
         "category": "Extension Nest Demo"
@@ -159,6 +154,36 @@
         "command": "extensionNest.resetDemo",
         "title": "Reset Extension Nest Demo",
         "category": "Extension Nest Demo"
+      },
+      {
+        "command": "extensionNest.groupUp",
+        "title": "Move Group Up",
+        "category": "Extension Nest Demo"
+      },
+      {
+        "command": "extensionNest.groupDown",
+        "title": "Move Group Down",
+        "category": "Extension Nest Demo"
+      },
+      {
+        "command": "extensionNest.extensionUp",
+        "title": "Move Extension Up",
+        "category": "Extension Nest Demo"
+      },
+      {
+        "command": "extensionNest.extensionDown",
+        "title": "Move Extension Down",
+        "category": "Extension Nest Demo"
+      },
+      {
+        "command": "extensionNest.sortGroups",
+        "title": "Sort Groups",
+        "category": "Extension Nest Demo"
+      },
+      {
+        "command": "extensionNest.sortExtensions",
+        "title": "Sort Extensions",
+        "category": "Extension Nest Demo"
       }
     ],
     "menus": {
@@ -175,6 +200,11 @@
         },
         {
           "command": "extensionNest.resetDemo",
+          "when": "view == extensionNest.groups",
+          "group": "tools"
+        },
+        {
+          "command": "extensionNest.sortGroups",
           "when": "view == extensionNest.groups",
           "group": "tools"
         }
@@ -196,11 +226,6 @@
           "group": "group"
         },
         {
-          "command": "extensionNest.moveToGroup",
-          "when": "view == extensionNest.groups && viewItem =~ /^extensionNest\\.extension/",
-          "group": "manage@1"
-        },
-        {
           "command": "extensionNest.toggle",
           "when": "view == extensionNest.groups && viewItem =~ /^extensionNest\\.extension/",
           "group": "manage@2"
@@ -214,6 +239,31 @@
           "command": "extensionNest.setTags",
           "when": "view == extensionNest.groups && viewItem =~ /^extensionNest\\.extension/",
           "group": "manage@4"
+        },
+        {
+          "command": "extensionNest.groupUp",
+          "when": "view == extensionNest.groups && viewItem == extensionNest.group",
+          "group": "sort"
+        },
+        {
+          "command": "extensionNest.groupDown",
+          "when": "view == extensionNest.groups && viewItem == extensionNest.group",
+          "group": "sort"
+        },
+        {
+          "command": "extensionNest.extensionUp",
+          "when": "view == extensionNest.groups && viewItem =~ /^extensionNest\\.extension/",
+          "group": "sort"
+        },
+        {
+          "command": "extensionNest.extensionDown",
+          "when": "view == extensionNest.groups && viewItem =~ /^extensionNest\\.extension/",
+          "group": "sort"
+        },
+        {
+          "command": "extensionNest.sortExtensions",
+          "when": "view == extensionNest.groups && (viewItem == extensionNest.group || viewItem == extensionNest.ungrouped)",
+          "group": "sort"
         }
       ]
     }
