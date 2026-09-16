@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { showCapabilityProbe } from "./capabilityProbe";
 import type { Action, DemoState, Extension, Group } from "../demo/src/models";
 import { seedState } from "../demo/src/seed";
 import { migrateState, reducer } from "../demo/src/state";
@@ -81,6 +82,7 @@ class ExtensionNestHost implements vscode.Disposable {
     };
 
     register("extensionNest.openDashboard", (value?: unknown) => this.openDashboard(value));
+    register("extensionNest.inspectCapabilities", () => showCapabilityProbe());
     register("extensionNest.showGroups", () => this.focusGroupsView());
     register("extensionNest.createGroup", () => this.createGroup());
     register("extensionNest.renameGroup", (value?: unknown) => this.renameGroup(value));

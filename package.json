@@ -109,6 +109,11 @@
     },
     "commands": [
       {
+        "command": "extensionNest.inspectCapabilities",
+        "title": "检查原生数据通路（只读）",
+        "category": "Extension Nest"
+      },
+      {
         "command": "extensionNest.openDashboard",
         "title": "Open Extension Nest Dashboard",
         "icon": "$(dashboard)",

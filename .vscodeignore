@@ -20,3 +20,5 @@ demo/test/**
 demo/vitest.config.ts
 demo/package.json
 **/.gitignore
+.m0-runtime/**
+scripts/**

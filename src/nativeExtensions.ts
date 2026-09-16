@@ -7,5 +7,15 @@ export async function openNativeExtension(id: unknown, state: DemoState): Promis
     || !state.extensions.some(extension => extension.id === id)) {
     throw new Error('Invalid extension ID.');
   }
-  await vscode.commands.executeCommand('extension.open', id);
+  try {
+    await vscode.commands.executeCommand('extension.open', id);
+  } catch {
+    const recovery = '在 VS Code 中查找';
+    const choice = await vscode.window.showErrorMessage(
+      `无法打开扩展 ${id} 的原生页面。可以在 VS Code 扩展视图中查找。`, recovery,
+    );
+    if (choice === recovery) {
+      await vscode.commands.executeCommand('workbench.extensions.search', `@id:${id}`);
+    }
+  }
 }

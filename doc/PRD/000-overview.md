@@ -1,5 +1,7 @@
 # PRD-000：产品总览与模块索引
 
+> 首版范围（2026-09-15）：仅当前 Profile 的本地插件；Remote 聚合、实例选择和跨目标 Mixed 状态延后。原有跨环境条目不计入首版验收，详见 [范围决策](../decisions/003-tags-and-reduced-scope.md)。本地清单与真实管理接入仍是待完成项。
+
 更新日期：2026-09-14。当前软件版本：0.1.2（示例数据 Demo）。本文和模块 PRD 定义正式产品要求，Demo 完成不代表正式 P0 验收通过。
 
 工作名称 Extension Nest；发布名称、publisher 和 License 尚待确认。来源为[原始聊天](https://chatgpt.com/c/6a3e8b9a-2fa8-83ee-9434-b25eb36b0ec2)，后续以用户明确修订及[决策记录](../decisions/003-tags-and-reduced-scope.md)为准。
