@@ -1,0 +1,66 @@
+{
+  "capturedAt": "2026-09-17T06:12:06.497Z",
+  "executable": "D:/其他/Microsoft VS Code/Code.exe",
+  "scenarios": [
+    {
+      "scenario": "baseline",
+      "vscodeVersion": "1.138.0",
+      "known": 52,
+      "fixtureCount": 50,
+      "visible": 50,
+      "notVisible": 0,
+      "inactive": 50,
+      "passed": true
+    },
+    {
+      "scenario": "missing",
+      "vscodeVersion": "1.138.0",
+      "known": 52,
+      "fixtureCount": 50,
+      "visible": 49,
+      "notVisible": 1,
+      "inactive": 49,
+      "passed": true
+    },
+    {
+      "scenario": "restart",
+      "vscodeVersion": "1.138.0",
+      "known": 52,
+      "fixtureCount": 50,
+      "visible": 50,
+      "notVisible": 0,
+      "inactive": 50,
+      "passed": true
+    },
+    {
+      "scenario": "workspace",
+      "vscodeVersion": "1.138.0",
+      "known": 52,
+      "fixtureCount": 50,
+      "visible": 50,
+      "notVisible": 0,
+      "inactive": 50,
+      "passed": true
+    },
+    {
+      "scenario": "profile",
+      "vscodeVersion": "1.138.0",
+      "known": 2,
+      "fixtureCount": 0,
+      "visible": 0,
+      "notVisible": 0,
+      "inactive": 0,
+      "passed": true
+    },
+    {
+      "scenario": "default-return",
+      "vscodeVersion": "1.138.0",
+      "known": 52,
+      "fixtureCount": 50,
+      "visible": 50,
+      "notVisible": 0,
+      "inactive": 50,
+      "passed": true
+    }
+  ]
+}

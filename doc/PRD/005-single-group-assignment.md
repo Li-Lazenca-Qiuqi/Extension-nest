@@ -2,7 +2,7 @@
 
 模块编号：PRD-005  |  需求编号：F05  |  优先级：P0
 
-状态：正式产品需求；0.1.0 为示例数据 Demo，不能等同于本模块已验收。
+更新日期：2026-09-16。正式需求，以[普通 VSIX 决策](../decisions/004-public-vsix-discovery.md)为准；当前 Demo 不代表验收。
 
 [总览与索引](000-overview.md) · [当前待办](../TODO.md)
 
@@ -14,11 +14,11 @@
 
 ## 2. 规则与交互
 
-每个 Extension ID 至多对应一个 Group ID，未分配即 Ungrouped。拖动将已有归属替换为唯一目标；同目标操作幂等。Dashboard 单击单选、Ctrl 点击增减批量选择，批量拖动通过目标高亮和插入线指示落点，并一次性提交；不提供 Move 按钮、菜单或目标组选择弹窗；失败不产生部分移动。分组分配或解除只更新 `groupId`，不读取、追加或清空扩展的 Tag。
+每个 Extension ID 至多对应一个 Group ID，未分配即 Ungrouped。拖动将已有归属替换为唯一目标；同目标操作幂等。Dashboard 单击单选、Ctrl 点击增减批量选择，批量拖动通过目标高亮和插入线指示落点，并一次性提交；不提供 Move 按钮、菜单或目标组选择弹窗；失败不产生部分移动。分组分配或解除只更新正式 `assignments`，不读取、追加或清空扩展的 Tag。
 
 ## 3. 模块依赖
 
-- [PRD-001：全量安装清单](001-installed-inventory.md)
+- [PRD-001：自动发现与历史记录](001-installed-inventory.md)
 - [PRD-004：分组管理](004-group-management.md)
 - [PRD-009：本地状态与恢复](009-persistence.md)
 
@@ -39,3 +39,6 @@
 ## 5. 范围与证据边界
 
 遵循 [PRD-000 的公共约束](000-overview.md#公共集成规则)。实现、测试和剩余阻塞统一记录在 TODO，本文件不另建执行清单。
+
+
+当前可见、历史不可见与未核验记录使用相同的组织规则；消失/重现不改变 Group、Tag 或保存顺序。标记定义见 [PRD-001](001-installed-inventory.md)，数据新鲜度独立处理。

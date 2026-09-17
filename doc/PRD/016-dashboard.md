@@ -1,63 +1,37 @@
 # PRD-016：紧凑卡片 Dashboard
 
-模块编号：PRD-016  |  需求编号：F16  |  优先级：P0
+更新日期：2026-09-16。正式需求，当前 Demo 不代表已验收。
 
-状态：正式产品需求；0.1.0 为示例数据 Demo，不能等同于本模块已验收。
-
-[总览与索引](000-overview.md) · [当前待办](../TODO.md)
+[总览](000-overview.md) · [活动清单](../TODO.md) · [范围决策](../decisions/004-public-vsix-discovery.md)
 
 ## 1. 目标与需求
 
-| 编号 | 功能 | 必须满足的行为 |
-| --- | --- | --- |
-| F16 | Dashboard | 按本模块定义交付真实统计、鼠标筛选、搜索、分组移动和管理入口；共享服务与状态，不能各自保存一套分组 |
+F16：已知记录驱动 Group 分区与准确计数，同一面板重复打开只聚焦。包括历史不可见项，不能只显示本次发现数组。
 
 ## 2. 规则与交互
 
-Dashboard 在 VS Code 编辑器 Webview 中打开，同一面板重复打开时聚焦，不新增失步实例。使用紧凑插件卡片，自适应列数；删除宣传式标题、副标题和大面积留白。统计是一行可点击的紧凑筛选，不做大统计卡片。每个 ID 一张聚合卡片，可查看安装实例；分组导航保留原生侧边栏，Dashboard 卡片也可拖入目标分区。
+保留默认展开分组、空组、Ungrouped 最后、单/双栏、面板宽度不超过 760px 时单栏回退、全部展开收起、组色线、Ctrl/Command 多选与拖动插入。无网页侧边栏、复选框、Move 弹窗或自建 Details。
 
-Dashboard 是 P0 的正式管理面板，默认按 Group 分区展开当前管理范围内所有已安装扩展；每个组显示标题、数量和卡片网格，Ungrouped 固定置后。新建空组默认可见；搜索或状态/Tag 筛选时仅保留匹配分区。界面保持简洁紧凑，不使用宣传式标题、副标题或大面积留白；统计为单行紧凑筛选，插件采用卡片网格。以下布局是需求说明，不是已生成的 UI 原型。
-
-| 区域 | 内容与行为 |
+| 区域 | 内容 |
 | --- | --- |
-| 顶栏 | 当前 Profile/安装目标，Refresh、Check Updates、打开原生 Extensions 入口，数据更新时间 |
-| 概览 | Installed、Enabled、Disabled、Updates、Ungrouped；点击统计项应用对应筛选 |
-| 分组入口 | 原生侧边栏与 Dashboard 分组区域都可拖动整理；Dashboard 内容区按 Group 展示卡片分区，并提供组筛选器与卡片移动入口；内容分区不是第二个侧边栏 |
-| 插件卡片网格 | 每个插件一张紧凑卡片，显示图标、名称、publisher、版本、唯一分组和启用状态；保留复选框、更新及管理按钮。自适应列数，不使用表格列表 |
-| 搜索/筛选 | 按名称、ID、publisher 搜索；按分组、状态、安装目标、Built-in/User Installed 类型筛选；Clear Filters 一键恢复完整清单，默认不排除内置扩展 |
-| 反馈区 | 加载中、同步失败、操作进度、重启要求、离线与重试；不显示虚构统计或成功状态 |
+| 顶栏 | Local host 范围、Refresh、通用原生 Extensions 入口、最近成功观测时间；未取得真实 Profile 名称时不伪造 |
+| 统计 | All、Visible、Not found、Ungrouped，按唯一已知 ID |
+| 卡片 | 图标/名称/publisher、Tag、版本观测、管理组织元数据菜单；本次未发现的记录统一标 Not found，正常卡片不标 Visible |
+| 搜索 | Group、可见性、Tag 与关键词，无启停/更新/目标筛选 |
+| 反馈 | Loading/Ready/Stale/Error、重试和缓存时间；不提示安装或更新成功 |
 
-计数口径必须可解释：Dashboard 的 Installed 等管理统计按当前筛选安装范围的**安装实例**计数，通过范围标签或 Tooltip 说明 Includes local and remote installations；组内数量按唯一 Extension ID 计数。默认每个 ID 一张聚合卡片，展开可看实例；跨环境相同 ID 不被误当成两份分组。选择单一目标后统计和列表均限定该目标。
+NotVisible 可弱化但可选、可拖动、可编辑，不能复用 Disabled 含义；Tooltip 说明可能禁用/卸载/宿主变化，原因未知。可见项显示本次版本；历史版本标 Last seen version，缺元数据用 ID 与图标占位。NotVisible/Unverified 默认可见。
 
-Enabled、Disabled、Unknown 构成安装实例的互斥状态分类；受策略阻止而非正常启用的实例在 Disabled 详情标明原因。Updates 是可与任意启用状态交叉的子集，未知更新状态单独提示。Ungrouped 统计未分组 ID 对应的安装实例，不能拿组数相加去伪造实例总数。
+统计以未施加搜索/筛选的本上下文全部已知记录计算并明确此口径：All = Visible + Not found，Ungrouped 为 All 中无归属子集，不相加到总数。分区标题显示当前筛选后的匹配数量，筛选不会改归属。快照过期时标记统计也是上次观测，不能把缓存数称为当前启用数或安装数。
 
-没有数据时区分“尚未读取”“读取失败”“已确认没有安装”和“筛选无结果”。禁用条目默认不隐藏。仅颜色不应承担唯一状态信息；Light、Dark、High Contrast 下均可读。
-
-## 3. 模块依赖
-
-- [PRD-001：全量安装清单](001-installed-inventory.md)
-- [PRD-002：原生分组树](002-native-group-tree.md)
-- [PRD-003：搜索与状态筛选](003-search-and-filters.md)
-- [PRD-005：单组归属与批量移动](005-single-group-assignment.md)
-- [PRD-008：原生详情与标识复制](008-native-details.md)
-- [PRD-012：启用、禁用与状态展示](012-enable-disable.md)
-- [PRD-013：扩展更新](013-updates.md)
-- [PRD-015：状态同步与并发](015-state-sync.md)
-- [PRD-017：插件 Tag](017-tags.md)
+不展示 Enabled/Disabled、Updates、可用版本、更新箭头、自动查询、启停按钮、Mixed、Restart Required；原有 Demo 相关 UI 的删除列入 TODO，文档改完不代表已删除。
 
 ## 4. 验收条件
 
-以下保留原 A 编号，本文件是这些案例的主定义。
+A22：三种主题、键盘辅助与鼠标主流程验证；不可见标记非仅颜色、条目仍可整理。
 
-| 编号 | 场景 | 预期 |
-| --- | --- | --- |
-| A22 | 不同主题下用鼠标执行整理和管理 | 灰显仍可读/可操作；按钮和右键可达；键盘仅辅助 |
+A30：空清单、历史项、未核验项、重新出现、失败、筛选组合的唯一 ID 计数满足上述公式；不以 Installed/Enabled 命名观测数量。
 
-关联案例（主定义位于对应模块）：
-- [A18 · PRD-003](003-search-and-filters.md#4-验收条件)
-- [A19 · PRD-015](015-state-sync.md#4-验收条件)
-- [A20 · PRD-012](012-enable-disable.md#4-验收条件)
+2026-09-17：用户界面合并原 NotVisible 与 Unverified，统一为 Not found（本次未发现）；树、卡片、统计和筛选口径一致，不显示来源区别。正常卡片不再显示 Visible 标签。后台保留是否存在真实发现证据，防止旧占位伪造版本/时间；旧记录清理的删除范围不因文案合并扩大到真实发现历史。
 
-## 5. 范围与证据边界
-
-遵循 [PRD-000 的公共约束](000-overview.md#公共集成规则)。实现、测试和剩余阻塞统一记录在 TODO，本文件不另建执行清单。
+2026-09-17：Dashboard 默认打开 Visible 筛选，仅展示本次发现的插件；用户仍可点击 All 或 Not found 查看保留记录。原生树明确选择分组时查看该组全部记录。
