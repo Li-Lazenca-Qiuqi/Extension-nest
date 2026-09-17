@@ -1,8 +1,10 @@
 # PRD-003：搜索与可见性筛选
 
+> 已于 2026-09-17 归档，仅供历史追溯。下文“当前/正式需求”等表述属于归档时点；当前范围见 [PRODUCT](../../PRODUCT.md)，全部未完成任务与验收条件见 [TODO](../../TODO.md)。
+
 更新日期：2026-09-16。正式需求，当前 Demo 不代表已验收。
 
-[总览](000-overview.md) · [活动清单](../TODO.md) · [范围决策](../decisions/004-public-vsix-discovery.md)
+[总览](000-overview.md) · [活动清单](../../TODO.md) · [范围决策](../../decisions/004-public-vsix-discovery.md)
 
 ## 1. 目标与需求
 

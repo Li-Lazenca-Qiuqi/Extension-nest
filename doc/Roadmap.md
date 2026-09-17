@@ -16,3 +16,5 @@ F10/F12/F13/F14 与 A07/A08/A10–A14/A20 撤销，不作为待实现或发布�
 P1 收藏、自定义图标、Settings Sync 等后续提案须另定需求。Remote 聚合、其他 Profile 管理、规则/AI 分类与扩展包生成不在首版。启停、更新、导入导出和卸载不自动放回后续清单。
 
 当前实现已覆盖 M1 主路径及 M2/M3 的代码接入；M0 的 Remote、M2 的运行中 Profile/双窗口和 M4 全量验收尚未结束。实现与证据见 [公开发现记录](note/public-discovery-implementation.md)。
+
+PRD 已于 2026-09-17 [归档](PRD/README.md)。上述阶段对应的全部未完成任务、具体通过条件和 A/AC 编号映射统一维护在 [TODO](TODO.md)，本路线图不另设验收清单。

@@ -28,4 +28,4 @@ Dashboard 顶部 `Clear old records` 可预览并永久删除没有真实发现�
 
 执行 `npm install` 和 `npm --prefix demo install`，再执行 `npm run build`，按 F5 启动 Extension Development Host。测试使用 `npm --prefix demo test`，宿主类型检查使用 `npm run typecheck`。
 
-[产品说明](doc/PRODUCT.md) · [需求索引](doc/PRD/000-overview.md) · [待办](doc/TODO.md) · [版本记录](CHANGELOG.md)
+[产品说明](doc/PRODUCT.md) · [历史需求](doc/archive/2026-09-17-prd/000-overview.md) · [待办](doc/TODO.md) · [版本记录](CHANGELOG.md)

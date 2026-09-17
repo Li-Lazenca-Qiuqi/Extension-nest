@@ -1,10 +1,12 @@
 # PRD-007：分组排序
 
+> 已于 2026-09-17 归档，仅供历史追溯。下文“当前/正式需求”等表述属于归档时点；当前范围见 [PRODUCT](../../PRODUCT.md)，全部未完成任务与验收条件见 [TODO](../../TODO.md)。
+
 模块编号：PRD-007  |  需求编号：F07  |  优先级：P0
 
-更新日期：2026-09-16。正式需求，以[普通 VSIX 决策](../decisions/004-public-vsix-discovery.md)为准；当前 Demo 不代表验收。
+更新日期：2026-09-16。正式需求，以[普通 VSIX 决策](../../decisions/004-public-vsix-discovery.md)为准；当前 Demo 不代表验收。
 
-[总览与索引](000-overview.md) · [当前待办](../TODO.md)
+[总览与索引](000-overview.md) · [当前待办](../../TODO.md)
 
 ## 1. 目标与需求
 

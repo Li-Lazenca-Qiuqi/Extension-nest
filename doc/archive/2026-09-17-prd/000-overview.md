@@ -1,6 +1,8 @@
 # PRD-000：产品总览与模块索引
 
-更新日期：2026-09-16。普通 VSIX 扩展整理器；当前代码版本 0.2.0，publisher Lazenca，仍处于 Demo 向正式数据接入阶段。当前范围以 [决策 004](../decisions/004-public-vsix-discovery.md) 为准。
+> 已于 2026-09-17 归档，仅供历史追溯。下文“当前/正式需求”等表述属于归档时点；当前范围见 [PRODUCT](../../PRODUCT.md)，全部未完成任务与验收条件见 [TODO](../../TODO.md)。
+
+更新日期：2026-09-17。普通 VSIX 扩展整理器，publisher Lazenca；真实发现与组织存储已接入，逐模块状态见 [PRD 审查](../../note/prd-audit-2026-09-17.md)，版本见 package.json 与 CHANGELOG。当前范围以 [决策 004](../../decisions/004-public-vsix-discovery.md) 为准。
 
 ## 产品目标
 
@@ -54,4 +56,4 @@ UI 只发送校验后的整理动作；发现服务、历史缓存、组织仓�
 
 Windows 优先，其他平台未测试明确限制；Remote 窗口的本地宿主放置需验证，远端聚合不是验收门槛。Webview CSP、资源路径、消息/ID/拖放校验必须通过。正式入口不加载 seed 或模拟管理，支持损坏恢复、Profile 隔离与不丢写的多窗口策略。
 
-[TODO](../TODO.md) 是唯一活动清单；历史调查保留证据但旧完整管理 M0 不再阻塞新范围。README 不在本轮维护，版本、CHANGELOG、提交和发布不自动执行。
+[TODO](../../TODO.md) 是唯一活动清单；历史调查保留证据但旧完整管理 M0 不再阻塞新范围。README 不在本轮维护，版本、CHANGELOG、提交和发布不自动执行。

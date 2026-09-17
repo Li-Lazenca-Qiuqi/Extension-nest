@@ -1,8 +1,10 @@
 # PRD-016：紧凑卡片 Dashboard
 
+> 已于 2026-09-17 归档，仅供历史追溯。下文“当前/正式需求”等表述属于归档时点；当前范围见 [PRODUCT](../../PRODUCT.md)，全部未完成任务与验收条件见 [TODO](../../TODO.md)。
+
 更新日期：2026-09-16。正式需求，当前 Demo 不代表已验收。
 
-[总览](000-overview.md) · [活动清单](../TODO.md) · [范围决策](../decisions/004-public-vsix-discovery.md)
+[总览](000-overview.md) · [活动清单](../../TODO.md) · [范围决策](../../decisions/004-public-vsix-discovery.md)
 
 ## 1. 目标与需求
 
@@ -20,7 +22,7 @@ F16：已知记录驱动 Group 分区与准确计数，同一面板重复打开�
 | 搜索 | Group、可见性、Tag 与关键词，无启停/更新/目标筛选 |
 | 反馈 | Loading/Ready/Stale/Error、重试和缓存时间；不提示安装或更新成功 |
 
-NotVisible 可弱化但可选、可拖动、可编辑，不能复用 Disabled 含义；Tooltip 说明可能禁用/卸载/宿主变化，原因未知。可见项显示本次版本；历史版本标 Last seen version，缺元数据用 ID 与图标占位。NotVisible/Unverified 默认可见。
+NotVisible 可弱化但可选、可拖动、可编辑，不能复用 Disabled 含义；Tooltip 说明可能禁用/卸载/宿主变化，原因未知。可见项显示本次版本；历史版本标 Last seen version，缺元数据用 ID 与图标占位。Dashboard 默认 Visible，通过 All 或 Not found 查看保留记录；原生树明确选择组时展示该组全部记录。默认 Visible 不应使空组及其拖放入口消失。
 
 统计以未施加搜索/筛选的本上下文全部已知记录计算并明确此口径：All = Visible + Not found，Ungrouped 为 All 中无归属子集，不相加到总数。分区标题显示当前筛选后的匹配数量，筛选不会改归属。快照过期时标记统计也是上次观测，不能把缓存数称为当前启用数或安装数。
 

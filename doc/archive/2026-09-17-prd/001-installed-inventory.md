@@ -1,8 +1,10 @@
 # PRD-001：自动发现与历史记录
 
+> 已于 2026-09-17 归档，仅供历史追溯。下文“当前/正式需求”等表述属于归档时点；当前范围见 [PRODUCT](../../PRODUCT.md)，全部未完成任务与验收条件见 [TODO](../../TODO.md)。
+
 更新日期：2026-09-16。正式需求，当前 Demo 不代表已验收。
 
-[总览](000-overview.md) · [活动清单](../TODO.md) · [范围决策](../decisions/004-public-vsix-discovery.md)
+[总览](000-overview.md) · [活动清单](../../TODO.md) · [范围决策](../../decisions/004-public-vsix-discovery.md)
 
 ## 1. 目标与需求
 
@@ -16,7 +18,7 @@ F01：通过本地 UI 宿主的公开扩展 API 自动发现可见扩展，合�
 | NotVisible | 有真实发现历史，最新成功快照不含该 ID | 统一显示 Not found（本次未发现），保留记录 |
 | Unverified | 只有旧组织 ID，或本会话尚无成功读取 | 统一显示 Not found（本次未发现）；快照未就绪仍显示 Loading/Error，不宣称当前安装 |
 
-已知条目保持唯一 ID。首次发现进入 Ungrouped，若已有组织归属则恢复原归属；消失不删除、不移组、不清标签或顺序；再次发现恢复 Visible，不重复创建。NotVisible/Unverified 均可搜索、编辑 Tag、拖动排序、复制 ID、尝试原生导航。默认保留显示，不自动清理历史，旧组织占位可通过预览确认清理。
+已知条目保持唯一 ID。首次发现进入 Ungrouped，若已有组织归属则恢复原归属；消失不删除、不移组、不清标签或顺序；再次发现恢复 Visible，不重复创建。NotVisible/Unverified 均可搜索、编辑 Tag、拖动排序、复制 ID、尝试原生导航。历史记录保留，Dashboard 默认 Visible，通过 All 或 Not found 查看；原生树明确选择组时展示该组全部记录。不自动清理历史，旧组织占位可通过预览确认清理。
 
 禁用、卸载、宿主变化可能导致不可见，系统只报告观测事实，不推断 Disabled/Uninstalled。全局版本、启停范围和更新状态不采集。当前可见版本来自本次 manifest；历史项只能显示 Last seen version，图标不可读时回退占位。
 
