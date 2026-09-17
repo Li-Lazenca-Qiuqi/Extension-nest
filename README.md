@@ -1,30 +1,31 @@
-# Extension Nest Demo
+# Extension Nest
 
-当前版本：**0.1.2**。最低 VS Code 版本：1.137.0。
+版本：**0.2.1**。最低 VS Code 版本：1.137.0。当前提供本地 VSIX 安装包。
 
-这是运行在 VS Code 内的交互演示：分组位于原生 Explorer 侧边栏，Dashboard 位于编辑器 Webview。Dashboard 不创建第二个网页侧边栏。
+在原生 Extension Nest 侧边栏和编辑器 Dashboard 中，用分组、标签、拖动和排序整理插件。扩展 ID 保持 `Lazenca.extension-nest-demo`，沿用旧版身份以便升级；正式宿主已使用真实公开发现数据。
 
-## 当前能力
+## 安装和使用
 
-使用 14 个示例扩展演示唯一分组、原生树拖动、组排序、灰显禁用条目、统计筛选、搜索、模拟更新以及独立 Tag 搜索筛选。两种界面由扩展宿主统一管理状态，保存在独立的 Demo 存储键中。
+1. 在 VS Code 执行 `Extensions: Install from VSIX...`，选择 `extension-nest-demo-0.2.1.vsix`。
+2. 安装或升级后按提示重新加载窗口。
+3. 运行 `Extension Nest: Open Extension Nest Dashboard`，或点击 Extension Nest 侧边栏的 Dashboard 图标。
 
-**示例扩展不代表本机安装清单。启用、禁用和更新只修改演示数据，不修改你真正安装的插件。** 原生 Marketplace 接入和完整清单读取仍是后续工作。
+Dashboard 默认显示 Visible。All 显示本插件保留的已知记录；Not found 表示本次未发现，不等于确认禁用或卸载。已发现记录消失后保留原组、Tag 和顺序，重新出现时恢复。
 
-## 本地运行
+内置扩展默认从列表和统计中隐藏；设置 `extensionNest.showBuiltinExtensions` 可重新显示。组支持拖动和上下移动，组内插件支持字段排序。没有 Sort groups、启停、更新、卸载和导入导出入口；插件标题只导航到 VS Code 原生页面。
 
-1. 在项目根目录执行 `npm install`，随后执行 `npm --prefix demo install`。
-2. 执行 `npm run build` 构建扩展宿主及 Dashboard。
-3. 用 VS Code 打开项目，按 F5 启动 Extension Development Host。
-4. 在 Explorer 侧边栏打开 Extension Nest Demo，或运行命令 `Extension Nest Demo: Open Extension Nest Dashboard`。
+Dashboard 顶部 `Clear old records` 可预览并永久删除没有真实发现历史的旧组织占位。删除前列出 ID、分组和标签，不创建备份、不提供恢复；不会卸载插件。已有真实发现历史的 Not found 记录不属于此项残留清理范围。
 
-Tag 可添加多个，仅参与筛选和搜索，不参与分组；不提供配置导入导出或插件卸载。
+## 范围和限制
 
-分组可以通过原生侧边栏拖动整理；Dashboard 的分组选择器用于筛选，点击插件的组名可以移动归属。灰色条目仍可操作。
+- 仅发现当前本地 UI 宿主公开可见项，不代表全部已安装或已启用插件，不主动激活其他插件；不聚合 Remote/Web 宿主。
+- 内置识别依赖当前桌面发行版随应用分发的 manifest ID；其他发行版目录布局未全面测试。
+- 组织数据与发现历史分别保存于当前 Profile 的 globalState。为了防止跨窗口覆盖，同一应用存储目录仅一个窗口可写；其他窗口只读。关闭写者后重新加载只读窗口可重新取得写入权。
+- Windows 本地宿主已验证。Remote、运行中切换 Profile、真实多窗口完整流程、macOS/Linux 和完整性能验收仍未完成。
+- 浏览器开发预览保留样例；安装后的宿主不加载示例清单。
 
-## 文档
+## 本地开发
 
-- [产品需求](doc/PRD/000-overview.md)
-- [当前待办](doc/TODO.md)
-- [路线图](doc/Roadmap.md)
+执行 `npm install` 和 `npm --prefix demo install`，再执行 `npm run build`，按 F5 启动 Extension Development Host。测试使用 `npm --prefix demo test`，宿主类型检查使用 `npm run typecheck`。
 
-0.1.2 为本地交互 Demo，尚未发布到 Marketplace。版本变化见 [CHANGELOG](CHANGELOG.md)。
+[产品说明](doc/PRODUCT.md) · [需求索引](doc/PRD/000-overview.md) · [待办](doc/TODO.md) · [版本记录](CHANGELOG.md)

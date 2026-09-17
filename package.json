@@ -1,8 +1,8 @@
 {
   "name": "extension-nest-demo",
   "displayName": "Extension Nest Demo",
-  "description": "A native VS Code TreeView and editor Dashboard demo for organizing extensions.",
-  "version": "0.2.0",
+  "description": "Organize extensions visible to the local VS Code host with groups, tags, and a native Dashboard.",
+  "version": "0.2.1",
   "private": true,
   "publisher": "Lazenca",
   "icon": "media/extension-nest-icon.png",

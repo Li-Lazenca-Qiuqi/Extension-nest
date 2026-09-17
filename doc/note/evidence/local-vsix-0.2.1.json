@@ -1,0 +1,16 @@
+{
+  "version": "0.2.1",
+  "capturedAt": "2026-09-17T06:51:57.673Z",
+  "cleanInstall": true,
+  "listedExtension": "Lazenca.extension-nest-demo@0.2.1",
+  "isolation": "New user-data-dir and extensions-dir; no user profile modified",
+  "artifact": "extension-nest-demo-0.2.1.vsix",
+  "bytes": 518405,
+  "sha256": "2d080048cfc426c8bedf0568689be062da1effc7652bac16becedeb0b4ff3acc",
+  "tests": 115,
+  "typecheck": true,
+  "build": true,
+  "archiveContentsVerified": true,
+  "publishedToMarketplace": false,
+  "publishedToGitHub": false
+}
