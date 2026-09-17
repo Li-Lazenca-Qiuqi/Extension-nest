@@ -12,9 +12,9 @@ export interface Extension {
   publisher: string;
   description: string;
   version: string;
-  update?: string;
   groupId: string | null;
-  enabled: boolean;
+  visibility: "Visible" | "NotVisible" | "Unverified";
+  lastSeenAt?: string;
   monogram: string;
   color: string;
   tags: string[];
@@ -25,20 +25,21 @@ export interface DemoState {
   schemaVersion: 1;
   groups: Group[];
   extensions: Extension[];
+  freshness?: "Loading" | "Ready" | "Stale" | "Error";
+  lastSuccessfulAt?: string;
+  error?: string;
+  readOnly?: boolean;
 }
 
 /** 演示状态支持的全部操作。 */
 export type Action =
   | { type: "move"; ids: string[]; groupId: string | null; beforeId?: string | null }
-  | { type: "toggle"; id: string }
-  | { type: "update"; id: string }
   | { type: "setTags"; ids: string[]; tags: string[] }
   | { type: "createGroup"; name: string }
   | { type: "renameGroup"; id: string; name: string }
   | { type: "deleteGroup"; id: string }
   | { type: "reorderGroup"; id: string; targetId: string; after?: boolean }
   | { type: "shiftGroup"; id:string; direction:-1|1 }
-  | { type: "sortGroups"; direction:-1|1 }
   | { type: "sortExtensions"; groupId:string|null; field:'name'|'publisher'|'id'; direction:-1|1 }
   | { type: "shiftExtension"; id:string; direction:-1|1 }
   | { type: "reset" };

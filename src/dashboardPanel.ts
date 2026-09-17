@@ -6,6 +6,9 @@ import { loadExtensionIcon } from "./extensionIcons";
 /** Dashboard 可以请求宿主执行的回调集合。 */
 export interface DashboardHostCallbacks {
   getState(): DemoState;
+  onRefresh(): Promise<void>;
+  onCleanupUnverified(): Promise<void>;
+  onOpenExtensions(): Promise<void>;
   onAction(action: unknown): Promise<void>;
   onShowGroups(): Promise<void>;
   onOpenExtension(id: unknown): Promise<void>;
@@ -20,6 +23,7 @@ export class DashboardPanel {
   private filter: DashboardFilter = "all";
   private ready = false;
   private pendingError: string | undefined;
+  private stateRevision = 0;
 
   constructor(
     private readonly extensionUri: vscode.Uri,
@@ -57,6 +61,7 @@ export class DashboardPanel {
       },
       undefined,
     );
+    panel.onDidChangeViewState(event => { if (event.webviewPanel.visible) void this.callbacks.onRefresh(); });
     panel.webview.onDidReceiveMessage(
       (message: unknown) => this.handleMessage(message),
       undefined,
@@ -66,13 +71,14 @@ export class DashboardPanel {
 
   /** 向已打开的 Dashboard 发送最新状态。 */
   async postState(state: DemoState): Promise<void> {
+    const revision = ++this.stateRevision;
     if (!this.panel || !this.ready) {
       return;
     }
     await this.panel.webview.postMessage({ type: "state", state });
     const panel=this.panel;
     void Promise.all(state.extensions.map(async extension=>[extension.id,await loadExtensionIcon(extension.id)] as const)).then(entries=>{
-      if(this.panel===panel&&this.ready)void panel.webview.postMessage({type:'icons',icons:Object.fromEntries(entries.filter(([,src])=>src))});
+      if(this.panel===panel&&this.ready&&revision===this.stateRevision)void panel.webview.postMessage({type:'icons',icons:Object.fromEntries(entries.filter(([,src])=>src))});
     });
   }
 
@@ -108,6 +114,15 @@ export class DashboardPanel {
           this.pendingError = undefined;
           await this.panel?.webview.postMessage({ type: "error", message: error });
         }
+        return;
+      case "cleanupUnverified":
+        await this.callbacks.onCleanupUnverified();
+        return;
+      case "refresh":
+        await this.callbacks.onRefresh();
+        return;
+      case "openExtensions":
+        await this.callbacks.onOpenExtensions();
         return;
       case "action":
         await this.callbacks.onAction(message.action);

@@ -32,6 +32,7 @@ function groupNameKey(name: string): string {
 /** 深复制状态，避免状态操作或持久化读写共享可变对象。 */
 function cloneState(state: DemoState): DemoState {
   return {
+    ...state,
     schemaVersion: 1,
     groups: state.groups.map((group) => ({ ...group })),
     extensions: state.extensions.map((extension) => ({ ...extension, tags: [...extension.tags] })),
@@ -86,33 +87,6 @@ function moveExtensions(state: DemoState, ids: string[], groupId: string | null,
     return { ...extension, groupId };
   });
 
-  return changed ? { ...state, extensions } : state;
-}
-
-/** 翻转扩展的启用状态。 */
-function toggleExtension(state: DemoState, id: string): DemoState {
-  let changed = false;
-  const extensions = state.extensions.map((extension) => {
-    if (extension.id !== id) {
-      return extension;
-    }
-    changed = true;
-    return { ...extension, enabled: !extension.enabled };
-  });
-  return changed ? { ...state, extensions } : state;
-}
-
-/** 应用可用更新版本，并清除更新提示。 */
-function updateExtension(state: DemoState, id: string): DemoState {
-  let changed = false;
-  const extensions = state.extensions.map((extension) => {
-    if (extension.id !== id || !extension.update) {
-      return extension;
-    }
-    changed = true;
-    const { update: _update, ...rest } = extension;
-    return { ...rest, version: extension.update };
-  });
   return changed ? { ...state, extensions } : state;
 }
 
@@ -228,8 +202,6 @@ function validateExtension(value: unknown, groupIds: Set<string>): value is Exte
 
   const groupId = value.groupId;
   const validGroupId = groupId === null || (isNonEmptyString(groupId) && groupIds.has(groupId));
-  const update = value.update;
-  const validUpdate = update === undefined || (isNonEmptyString(update) && update === update.trim());
   const rawTags = value.tags;
   if (!Array.isArray(rawTags) || !rawTags.every((tag) => typeof tag === "string")) {
     return false;
@@ -249,9 +221,8 @@ function validateExtension(value: unknown, groupIds: Set<string>): value is Exte
     isNonEmptyString(value.publisher) &&
     typeof value.description === "string" &&
     isNonEmptyString(value.version) &&
-    validUpdate &&
     validGroupId &&
-    typeof value.enabled === "boolean" &&
+    ["Visible", "NotVisible", "Unverified"].includes(value.visibility as string) &&
     isNonEmptyString(value.monogram) &&
     typeof value.color === "string" &&
     value.color.trim().length > 0 &&
@@ -349,10 +320,6 @@ export function reducer(state: DemoState, action: Action): DemoState {
   switch (action.type) {
     case "move":
       return moveExtensions(state, action.ids, action.groupId, action.beforeId);
-    case "toggle":
-      return toggleExtension(state, action.id);
-    case "update":
-      return updateExtension(state, action.id);
     case "setTags":
       return setExtensionTags(state, action.ids, action.tags);
     case "createGroup":
@@ -368,8 +335,6 @@ export function reducer(state: DemoState, action: Action): DemoState {
       if(index<0||target<0||target>=groups.length)return state;
       [groups[index],groups[target]]=[groups[target],groups[index]];return {...state,groups};
     }
-    case "sortGroups":
-      return {...state,groups:[...state.groups].sort((a,b)=>action.direction*(a.name.localeCompare(b.name)||a.id.localeCompare(b.id)))};
     case "sortExtensions": {
       if(!hasValidTargetGroup(state,action.groupId))return state;
       const sorted=state.extensions.filter(e=>e.groupId===action.groupId).sort((a,b)=>action.direction*(a[action.field].localeCompare(b[action.field])||a.id.localeCompare(b.id)));

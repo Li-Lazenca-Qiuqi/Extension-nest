@@ -36,7 +36,7 @@ it('不把未激活或远端窗口信息推断成禁用状态和本地目标', a
   expect(report.environment.profile).toBe('Unverified');
   expect(report.inventory.completeness).toBe('Unverified');
   expect(report.inventory.extensions[0]).toMatchObject({
-    isActive: false, enablement: 'Unknown', updateState: 'Unknown',
+    isActive: false,
   });
   expect(mock.activate).not.toHaveBeenCalled();
   expect(mock.executeCommand).not.toHaveBeenCalled();
@@ -47,7 +47,7 @@ it('区分已注册与缺失命令，且从不执行候选命令', async () => {
   const report = await collectCapabilityProbe();
   expect(report.commands.find(command => command.id === 'extension.open'))
     .toEqual({ id: 'extension.open', registered: true, executed: false });
-  expect(report.commands.find(command => command.id === 'workbench.extensions.action.checkForUpdates'))
+  expect(report.commands.find(command => command.id === 'workbench.extensions.search'))
     .toMatchObject({ registered: false, executed: false });
   expect(mock.executeCommand).not.toHaveBeenCalled();
 });

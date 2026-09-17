@@ -7,7 +7,7 @@ export function filterExtensions(extensions:Extension[],filters:ExtensionFilters
   return extensions.filter(extension=>{
     const ownTags=extension.tags.map(tag=>tag.toLocaleLowerCase());
     return (filters.group==='all'||(filters.group==='ungrouped'?extension.groupId===null:extension.groupId===filters.group))
-      &&(filters.status==='all'||(filters.status==='enabled'?extension.enabled:filters.status==='disabled'?!extension.enabled:!!extension.update))
+      &&(filters.status==='all'||(filters.status==='NotVisible'?extension.visibility!=='Visible':extension.visibility===filters.status))
       &&tags.every(tag=>ownTags.includes(tag))
       &&`${extension.name} ${extension.publisher} ${extension.id} ${extension.tags.join(' ')}`.toLocaleLowerCase().includes(query);
   });

@@ -6,7 +6,7 @@ import { openNativeExtension } from '../../src/nativeExtensions';
 beforeEach(()=>{native.calls=[];native.fail=false;native.failSearch=false;native.choice=undefined;native.showErrorMessage.mockReset();native.showErrorMessage.mockImplementation(async()=>native.choice)});
 
 it('opens the exact known extension ID with the fixed native command',async()=>{
- await openNativeExtension('ms-python.python',seedState);
+ await expect(openNativeExtension('ms-python.python',seedState)).resolves.toBe('Opened');
  expect(native.calls).toEqual([['extension.open','ms-python.python']]);
 });
 it.each(['unknown.extension','command:workbench.action.closeWindow',null,{},'ms-python.python extra'])('rejects invalid or unknown target %s',async id=>{
@@ -24,9 +24,9 @@ it('选择恢复入口后使用固定搜索命令与已验证 ID',async()=>{
  await openNativeExtension('ms-python.python',seedState);
  expect(native.calls).toEqual([['extension.open','ms-python.python'],['workbench.extensions.search','@id:ms-python.python']]);
 });
-it('恢复命令失败仍传播错误供宿主报告',async()=>{
+it('恢复命令失败返回明确 Failed',async()=>{
  native.fail=true;native.failSearch=true;native.choice='在 VS Code 中查找';
- await expect(openNativeExtension('ms-python.python',seedState)).rejects.toThrow('Unavailable');
+ await expect(openNativeExtension('ms-python.python',seedState)).resolves.toBe('Failed');
 });
 
 

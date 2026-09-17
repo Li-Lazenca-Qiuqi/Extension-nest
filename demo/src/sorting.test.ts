@@ -14,12 +14,6 @@ it('moves groups in both directions and ignores the first/last boundaries',()=>{
  expect(moved.groups[1].id).toBe(first);
  expect(reducer(moved,{type:'shiftGroup',id:first,direction:-1})).toEqual(seedState);
 });
-it('sorts groups without changing extension metadata or Ungrouped placement',()=>{
- const sorted=reducer(seedState,{type:'sortGroups',direction:-1});
- expect(sorted.extensions).toBe(seedState.extensions);
- expect(sorted.groups.map(g=>g.name)).toEqual(seedState.groups.map(g=>g.name).sort((a,b)=>b.localeCompare(a)));
- expect(groupExtensions(sorted.groups,sorted.extensions).at(-1)?.id).toBe('ungrouped');
-});
 it.each(['name','publisher','id'] as const)('sorts %s within one group and preserves saved order in both views',field=>{
  const sorted=reducer(seedState,{type:'sortExtensions',groupId:'python-data',field,direction:-1});
  const expected=seedState.extensions.filter(e=>e.groupId==='python-data').sort((a,b)=>b[field].localeCompare(a[field])||b.id.localeCompare(a.id));

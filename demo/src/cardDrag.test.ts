@@ -11,13 +11,13 @@ beforeEach(()=>{vi.stubGlobal('requestAnimationFrame',vi.fn(()=>1));vi.stubGloba
 afterEach(()=>{cleanup();document.body.innerHTML='';vi.unstubAllGlobals();target=null});
 /** 真实 React 事件与 reducer 联动，测试不依赖系统拖影。 */
 function setup(selected:string[]=[]){
- let state=structuredClone(seedState);const element=document.createElement('div');document.body.append(element);const root=createRoot(element);const toggle=vi.fn();const openExtension=vi.fn();
+ let state=structuredClone(seedState);const element=document.createElement('div');document.body.append(element);const root=createRoot(element);const openExtension=vi.fn();
  const move=vi.fn((ids:string[],groupId:string|null)=>{state=reducer(state,{type:'move',ids,groupId});render()});
- function render(){root.render(createElement(ExtensionCards,{activeGroup:'all',filtered:false,rows:state.extensions,groups:state.groups,selected,menu:null,onSelect:ids=>{selected=ids;render()},onMenu:()=>{},onToggle:toggle,onUpdate:()=>{},onEditTags:()=>{},onFilterTag:()=>{},onOpenExtension:openExtension,onCopy:()=>{},onDropExtensions:move}))}
+ function render(){root.render(createElement(ExtensionCards,{activeGroup:'all',filtered:false,rows:state.extensions,groups:state.groups,selected,menu:null,onSelect:ids=>{selected=ids;render()},onMenu:()=>{},onEditTags:()=>{},onFilterTag:()=>{},onOpenExtension:openExtension,onCopy:()=>{},onDropExtensions:move}))}
  act(render);cleanup=()=>act(()=>root.unmount());
  const card=element.querySelector<HTMLElement>('[data-extension="ms-python.python"]')!;
  card.getBoundingClientRect=()=>({x:100,y:200,left:100,top:200,right:400,bottom:340,width:300,height:140,toJSON:()=>({})});
- return {element,move,toggle,openExtension,card,state:()=>state};
+ return {element,move,openExtension,card,state:()=>state};
 }
 /** 保留事件冒泡与点击隔离，模拟同一鼠标指针。 */
 function pointer(node:Element|Document,type:string,x=120,y=220){const event=new Event(type,{bubbles:true,cancelable:true});Object.defineProperties(event,{button:{value:0},pointerId:{value:1},pointerType:{value:'mouse'},clientX:{value:x},clientY:{value:y}});act(()=>node.dispatchEvent(event));return event}
@@ -57,7 +57,6 @@ it.each(['pointercancel','Escape','blur'])('clears the target highlight on %s wi
 });
 it('keeps buttons clickable and never starts native or custom dragging from controls',()=>{
  const app=setup();for(const control of app.card.querySelectorAll('button,input')){pointer(control,'pointerdown');pointer(document,'pointermove',300,400);pointer(document,'pointerup',300,400);expect(document.querySelector('.card-drag-preview')).toBeNull()}
- act(()=>app.card.querySelector<HTMLButtonElement>('.status')!.click());expect(app.toggle).toHaveBeenCalledWith('ms-python.python');
  act(()=>app.card.querySelector<HTMLButtonElement>('.extension-name')!.click());expect(app.openExtension).toHaveBeenCalledWith('ms-python.python');
  const native=new Event('dragstart',{bubbles:true,cancelable:true});act(()=>app.card.dispatchEvent(native));expect(native.defaultPrevented).toBe(true);expect(app.move).not.toHaveBeenCalled();
 });

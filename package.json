@@ -101,8 +101,8 @@
       "extensionNest": [
         {
           "id": "extensionNest.groups",
-          "name": "Extension Nest Demo",
-          "contextualTitle": "Extension Nest Demo",
+          "name": "Extension Nest",
+          "contextualTitle": "Extension Nest",
           "visibility": "visible"
         }
       ]
@@ -117,78 +117,79 @@
         "command": "extensionNest.openDashboard",
         "title": "Open Extension Nest Dashboard",
         "icon": "$(dashboard)",
-        "category": "Extension Nest Demo"
+        "category": "Extension Nest"
       },
       {
         "command": "extensionNest.showGroups",
         "title": "Show Extension Nest Groups",
-        "category": "Extension Nest Demo"
+        "category": "Extension Nest"
       },
       {
         "command": "extensionNest.createGroup",
-        "title": "Create Demo Group",
+        "title": "Create Group",
         "icon": "$(add)",
-        "category": "Extension Nest Demo"
+        "category": "Extension Nest"
       },
       {
         "command": "extensionNest.renameGroup",
-        "title": "Rename Demo Group",
-        "category": "Extension Nest Demo"
+        "title": "Rename Group",
+        "category": "Extension Nest"
       },
       {
         "command": "extensionNest.deleteGroup",
-        "title": "Delete Demo Group",
-        "category": "Extension Nest Demo"
-      },
-      {
-        "command": "extensionNest.toggle",
-        "title": "Toggle Demo Extension",
-        "category": "Extension Nest Demo"
-      },
-      {
-        "command": "extensionNest.update",
-        "title": "Update Demo Extension",
-        "category": "Extension Nest Demo"
+        "title": "Delete Group",
+        "category": "Extension Nest"
       },
       {
         "command": "extensionNest.setTags",
-        "title": "Edit Demo Extension Tags",
-        "category": "Extension Nest Demo"
-      },
-      {
-        "command": "extensionNest.resetDemo",
-        "title": "Reset Extension Nest Demo",
-        "category": "Extension Nest Demo"
+        "title": "Edit Extension Tags",
+        "category": "Extension Nest"
       },
       {
         "command": "extensionNest.groupUp",
         "title": "Move Group Up",
-        "category": "Extension Nest Demo"
+        "category": "Extension Nest"
       },
       {
         "command": "extensionNest.groupDown",
         "title": "Move Group Down",
-        "category": "Extension Nest Demo"
+        "category": "Extension Nest"
       },
       {
         "command": "extensionNest.extensionUp",
         "title": "Move Extension Up",
-        "category": "Extension Nest Demo"
+        "category": "Extension Nest"
       },
       {
         "command": "extensionNest.extensionDown",
         "title": "Move Extension Down",
-        "category": "Extension Nest Demo"
-      },
-      {
-        "command": "extensionNest.sortGroups",
-        "title": "Sort Groups",
-        "category": "Extension Nest Demo"
+        "category": "Extension Nest"
       },
       {
         "command": "extensionNest.sortExtensions",
         "title": "Sort Extensions",
-        "category": "Extension Nest Demo"
+        "category": "Extension Nest"
+      },
+      {
+        "command": "extensionNest.refresh",
+        "title": "Refresh",
+        "category": "Extension Nest",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "extensionNest.openExtension",
+        "title": "Open extension page",
+        "category": "Extension Nest"
+      },
+      {
+        "command": "extensionNest.copyId",
+        "title": "Copy Extension ID",
+        "category": "Extension Nest"
+      },
+      {
+        "command": "extensionNest.cleanupUnverified",
+        "title": "清理旧记录",
+        "category": "Extension Nest"
       }
     ],
     "menus": {
@@ -204,14 +205,14 @@
           "group": "navigation"
         },
         {
-          "command": "extensionNest.resetDemo",
+          "command": "extensionNest.refresh",
           "when": "view == extensionNest.groups",
-          "group": "tools"
+          "group": "navigation"
         },
         {
-          "command": "extensionNest.sortGroups",
+          "command": "extensionNest.cleanupUnverified",
           "when": "view == extensionNest.groups",
-          "group": "tools"
+          "group": "cleanup"
         }
       ],
       "view/item/context": [
@@ -229,16 +230,6 @@
           "command": "extensionNest.deleteGroup",
           "when": "view == extensionNest.groups && viewItem == extensionNest.group",
           "group": "group"
-        },
-        {
-          "command": "extensionNest.toggle",
-          "when": "view == extensionNest.groups && viewItem =~ /^extensionNest\\.extension/",
-          "group": "manage@2"
-        },
-        {
-          "command": "extensionNest.update",
-          "when": "view == extensionNest.groups && viewItem =~ /^extensionNest\\.extension/",
-          "group": "manage@3"
         },
         {
           "command": "extensionNest.setTags",
@@ -269,8 +260,28 @@
           "command": "extensionNest.sortExtensions",
           "when": "view == extensionNest.groups && (viewItem == extensionNest.group || viewItem == extensionNest.ungrouped)",
           "group": "sort"
+        },
+        {
+          "command": "extensionNest.openExtension",
+          "when": "view == extensionNest.groups && viewItem == extensionNest.extension",
+          "group": "navigation"
+        },
+        {
+          "command": "extensionNest.copyId",
+          "when": "view == extensionNest.groups && viewItem == extensionNest.extension",
+          "group": "navigation"
         }
       ]
+    },
+    "configuration": {
+      "title": "Extension Nest",
+      "properties": {
+        "extensionNest.showBuiltinExtensions": {
+          "type": "boolean",
+          "default": false,
+          "description": "显示随当前 VS Code 应用分发的内置扩展。默认从列表和统计中隐藏，历史与组织数据仍保留。"
+        }
+      }
     }
   },
   "devDependencies": {
@@ -279,5 +290,8 @@
     "@vscode/vsce": "3.9.2",
     "esbuild": "0.28.2",
     "typescript": "7.0.2"
-  }
+  },
+  "extensionKind": [
+    "ui"
+  ]
 }

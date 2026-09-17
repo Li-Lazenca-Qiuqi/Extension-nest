@@ -122,7 +122,7 @@ export class DemoTreeProvider
       treeItem.id = `extension-nest-group:${element.groupId ?? "ungrouped"}`;
       treeItem.contextValue = element.groupId === null ? "extensionNest.ungrouped" : "extensionNest.group";
       treeItem.description = `${extensions.length}`;
-      treeItem.tooltip = `${element.label} (${extensions.length} demo extensions)`;
+      treeItem.tooltip = `${element.label} (${extensions.length} known extensions)`;
       treeItem.iconPath = new vscode.ThemeIcon(element.groupId === null ? "inbox" : "layers", groupIconColor(element.color));
       treeItem.command = {
         command: "extensionNest.openDashboard",
@@ -134,27 +134,23 @@ export class DemoTreeProvider
 
     const extension = element.extension;
     const treeItem = new vscode.TreeItem(extension.name, vscode.TreeItemCollapsibleState.None);
-    const status = extension.enabled ? "Enabled" : "Disabled";
-    const update = extension.update ? ` · Update ${extension.update}` : "";
+    const status = extension.visibility === "Visible" ? "" : "Not found";
     treeItem.id = `extension-nest-extension:${extension.id}`;
-    treeItem.contextValue = extension.enabled
-      ? "extensionNest.extension.enabled"
-      : "extensionNest.extension.disabled";
-    treeItem.description = `${extension.publisher} · v${extension.version} · ${status}${update}`;
+    treeItem.contextValue = "extensionNest.extension";
+    treeItem.description = `${extension.publisher} · v${extension.version}${status ? ` · ${status}` : ""}`;
     treeItem.tooltip = [
       `${extension.name} (${extension.id})`,
       extension.description,
       `Publisher: ${extension.publisher}`,
-      `Version: ${extension.version}`,
-      `Status: ${status}`,
-      extension.update ? `Available update: ${extension.update}` : undefined,
+      `${extension.visibility === "Visible" ? "Version" : "Last seen version"}: ${extension.version}`,
+      status ? `Status: ${status}` : undefined,
+      status ? 'Not found in the latest discovery. This does not confirm disabling or removal.' : undefined,
+      extension.lastSeenAt ? `Last seen: ${extension.lastSeenAt}` : undefined,
       `Tags: ${extension.tags.length > 0 ? extension.tags.join(", ") : "None"}`,
     ]
       .filter((line): line is string => Boolean(line))
       .join("\n");
-    treeItem.iconPath = extension.enabled
-      ? new vscode.ThemeIcon("extensions", groupIconColor(this.state.groups.find(group => group.id === element.groupId)?.color))
-      : new vscode.ThemeIcon("circle-slash", new vscode.ThemeColor("disabledForeground"));
+    treeItem.iconPath = new vscode.ThemeIcon("extensions", groupIconColor(this.state.groups.find(group => group.id === element.groupId)?.color));
     treeItem.command = {
       command: "extensionNest.openDashboard",
       title: "Open Extension Nest Dashboard",

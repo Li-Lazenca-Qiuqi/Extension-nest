@@ -4,10 +4,6 @@ import * as vscode from 'vscode';
 export const PROBE_COMMANDS = [
   'extension.open',
   'workbench.extensions.search',
-  'workbench.extensions.action.extensionUpdates',
-  'workbench.extensions.action.checkForUpdates',
-  'workbench.extensions.action.showEnabledExtensions',
-  'workbench.extensions.action.showDisabledExtensions',
 ] as const;
 
 /** 快照只反映当前宿主可见 API；不推断完整安装清单、Profile、启停或更新状态。 */
@@ -20,8 +16,6 @@ export async function collectCapabilityProbe() {
     isActive: extension.isActive,
     extensionKind: extension.extensionKind,
     locationScheme: extension.extensionUri.scheme,
-    enablement: 'Unknown' as const,
-    updateState: 'Unknown' as const,
   })).sort((left, right) => left.id.localeCompare(right.id));
 
   return {

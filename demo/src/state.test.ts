@@ -80,13 +80,12 @@ describe("demo state reducer", () => {
     expect(reducer(state, { type: "renameGroup", id: "writing", name: " PYTHON & DATA " })).toBe(state);
   });
 
-  it("applies update without mutating the input", () => {
+  it("keeps visibility and history when organizing a missing extension", () => {
     const state = freshState();
-    const updated = reducer(state, { type: "update", id: "ms-python.python" });
-    const python = updated.extensions.find((extension) => extension.id === "ms-python.python");
-    expect(python?.version).toBe("2024.22.0");
-    expect(python?.update).toBeUndefined();
-    expect(state.extensions.find((extension) => extension.id === "ms-python.python")?.update).toBe("2024.22.0");
+    const source = state.extensions.find(extension => extension.visibility === "NotVisible")!;
+    const next = reducer(state, { type: "move", ids: [source.id], groupId: "writing" });
+    expect(next.extensions.find(extension => extension.id === source.id)?.visibility).toBe("NotVisible");
+    expect(source.groupId).not.toBe("writing");
   });
 
   it("sets independent tags without changing group assignments", () => {
@@ -139,8 +138,8 @@ describe("demo state reducer", () => {
     expect(migrated.extensions.map((extension) => extension.groupId)).toEqual(
       state.extensions.map((extension) => extension.groupId),
     );
-    expect(migrated.extensions.map((extension) => extension.enabled)).toEqual(
-      state.extensions.map((extension) => extension.enabled),
+    expect(migrated.extensions.map((extension) => extension.visibility)).toEqual(
+      state.extensions.map((extension) => extension.visibility),
     );
   });
 
