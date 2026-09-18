@@ -1,0 +1,35 @@
+// @vitest-environment jsdom
+import { act, createElement } from 'react';
+import { createRoot } from 'react-dom/client';
+import { beforeAll, afterEach, expect, it, vi } from 'vitest';
+import { seedState } from './seed';
+import type AppType from './App';
+(globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT=true;
+let App:typeof AppType;
+let cleanup=()=>{};
+const postMessage=vi.fn();
+beforeAll(async()=>{window.acquireVsCodeApi=()=>({postMessage});App=(await import('./App')).default});
+afterEach(()=>{cleanup();document.body.innerHTML='';postMessage.mockClear()});
+it('keeps visibility independent from Ungrouped and places cleanup last',()=>{
+ const node=document.createElement('div');document.body.append(node);const root=createRoot(node);
+ act(()=>root.render(createElement(App)));cleanup=()=>act(()=>root.unmount());
+ const extensions=seedState.extensions.slice(0,3).map((e,i)=>({...e,groupId:i===2?seedState.groups[0].id:null,visibility:i===0?'Visible' as const:'Unverified' as const}));
+ act(()=>window.dispatchEvent(new MessageEvent('message',{data:{type:'state',state:{...seedState,extensions,freshness:'Ready'}}})));
+ act(()=>node.querySelector<HTMLButtonElement>('[aria-label="Sort groups"]')!.click());
+ act(()=>Array.from(node.querySelectorAll<HTMLButtonElement>('.header-actions .sort-options button')).find(b=>b.textContent==='Name Z–A')!.click());
+ expect(postMessage).toHaveBeenCalledWith({type:'action',action:{type:'sortGroups',direction:-1}});
+ expect(node.querySelector('.header-actions .sort-options')).toBeNull();
+ const metrics=Array.from(node.querySelectorAll<HTMLButtonElement>('.metrics button'));
+ expect(metrics.map(b=>b.querySelector('span')?.textContent)).toEqual(['All','Visible','Not found']);
+ const group=node.querySelector<HTMLElement>('[aria-label="Filter group"]')!;
+ act(()=>Array.from(node.querySelectorAll<HTMLButtonElement>('.group-filter-options button')).find(b=>b.textContent==='Ungrouped')!.click());
+ expect(metrics[1].getAttribute('aria-pressed')).toBe('true');
+ expect(node.querySelectorAll('article')).toHaveLength(1);
+ act(()=>metrics[2].click());
+ expect(group.textContent).toBe('Ungrouped');
+ expect(node.querySelector('article')?.getAttribute('data-extension')).toBe(extensions[1].id);
+ expect(node.querySelector('.header-actions')?.lastElementChild?.className).toBe('cleanup-unverified');
+ act(()=>node.querySelector<HTMLButtonElement>('.cleanup-unverified')!.click());
+ expect(postMessage).toHaveBeenCalledWith({type:'cleanupUnverified'});
+ act(()=>metrics[0].click());expect(group.textContent).toBe('All groups');expect(node.querySelectorAll('article')).toHaveLength(3);
+});

@@ -4,7 +4,7 @@
 @media(max-width:400px){.extension-grid{grid-template-columns:1fr}.compact-header{flex-wrap:wrap}.metrics{gap:0}.metric{padding-inline:5px}.filters select{flex:1}.filters input:not([type=checkbox]){flex-basis:100%}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 body.vscode-light{color-scheme:light}
-.card-tags,.tag-chips,.tag-suggestions{display:flex;align-items:center;flex-wrap:wrap;gap:5px;margin-top:7px}.tag-chip,.tag-chips button,.tag-suggestions button{font-size:10px;border:1px solid var(--line);border-radius:3px;min-height:20px;padding:1px 5px;color:var(--muted);overflow-wrap:anywhere;max-width:100%}.tag-filter{position:relative;flex-shrink:0;font-size:12px}.tag-filter summary{cursor:pointer;border:1px solid var(--line);border-radius:3px;padding:6px 8px;min-height:28px;list-style:none}.tag-filter-options{position:absolute;right:0;top:31px;z-index:30;width:175px;max-height:220px;overflow:auto;border:1px solid var(--line);background:var(--surface);padding:8px;box-shadow:0 6px 18px #0005}.tag-filter-options label{display:flex;align-items:center;gap:8px;padding:5px;overflow-wrap:anywhere}.tag-input-row{display:flex;align-items:center;gap:8px}.tag-editor form{margin-top:12px}.tag-input-row input{flex:1;min-width:0}.tag-input-row button{margin-top:7px}.selection-bar{flex-wrap:wrap}.filters{flex-wrap:wrap;justify-content:flex-end}.list-toolbar{flex-wrap:wrap}
+.card-tags,.tag-chips,.tag-suggestions{display:flex;align-items:center;flex-wrap:wrap;gap:5px;margin-top:7px}.tag-chip,.tag-chips button,.tag-suggestions button{font-size:10px;border:1px solid var(--line);border-radius:3px;min-height:20px;padding:1px 5px;color:var(--muted);overflow-wrap:anywhere;max-width:100%}.tag-filter{position:relative;flex-shrink:0;font-size:12px}.tag-filter summary{cursor:pointer;border:1px solid var(--line);border-radius:3px;padding:6px 8px;min-height:28px;list-style:none}.tag-filter-options{position:absolute;left:0;right:auto;top:31px;z-index:30;width:175px;max-height:220px;overflow:auto;border:1px solid var(--line);background:var(--surface);padding:8px;box-shadow:0 6px 18px #0005}.tag-filter-options label{display:flex;align-items:center;gap:8px;padding:5px;overflow-wrap:anywhere}.tag-input-row{display:flex;align-items:center;gap:8px}.tag-editor form{margin-top:12px}.tag-input-row input{flex:1;min-width:0}.tag-input-row button{margin-top:7px}.selection-bar{flex-wrap:wrap}.filters{flex-wrap:wrap;justify-content:flex-end}.list-toolbar{flex-wrap:wrap}
 .extension-section{margin:10px 0 18px}.extension-section>summary{cursor:pointer;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;list-style:none;padding:6px 0;border-bottom:1px solid var(--line);margin-bottom:8px}.extension-section>summary::before{content:'›';display:inline-block;transform:rotate(0);font-size:16px;line-height:1}.extension-section[open]>summary::before{transform:rotate(90deg)}.extension-section>summary small{font-size:11px;font-weight:400;color:var(--muted)}.group-empty{padding:8px 16px;color:var(--muted);font-size:11px}
 .extension-card{cursor:grab}.extension-card:active{cursor:grabbing}.extension-section>summary{min-height:30px}
 
@@ -12,7 +12,7 @@ body.vscode-light{color-scheme:light}
 .card-bottom{align-items:center;gap:8px;margin-top:10px}.version-actions{display:flex;align-items:center;justify-content:flex-end;gap:5px;margin-left:auto;flex-shrink:0}
 /* 顶部色线不占布局空间，分类颜色与可见性标记分别表达。 */
 .extension-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--group-color);border-radius:4px 4px 0 0;pointer-events:none}
-.extension-section>summary{border-bottom:2px solid var(--group-color)}
+.extension-section>summary{border-bottom:3px solid var(--group-color)}
 /* 拖放颜色跟随宿主主题；高对比度主题优先采用专用轮廓，缺省时从当前文字颜色派生。 */
 .extension-section.is-drop-target{background:var(--vscode-list-dropBackground,var(--vscode-editorGroup-dropBackground,color-mix(in srgb,currentColor 12%,transparent)));outline:1px solid var(--vscode-contrastActiveBorder,var(--vscode-focusBorder,currentColor));outline-offset:2px;border-radius:3px}
 
@@ -31,11 +31,11 @@ body.vscode-light{color-scheme:light}
 .dashboard-toolbar .metric{padding:3px 5px;white-space:nowrap;font-size:11px}
 .dashboard-toolbar .metric strong{font-size:12px}
 .dashboard-toolbar .filters{margin-left:auto;flex-wrap:nowrap;width:auto;min-width:0}
-.dashboard-toolbar .filters input:not([type=checkbox]){width:160px;flex:none;font-size:12px}
-.dashboard-toolbar .filters select{max-width:140px}
-.dashboard-toolbar .header-actions{flex-shrink:0}
+.dashboard-toolbar .filters input:not([type=checkbox]){width:96px;flex:none;font-size:12px}
+.dashboard-toolbar .filters .tag-filter{width:var(--filter-width,120px);max-width:min(220px,calc(100vw - 36px));flex:none}
+.dashboard-toolbar .header-actions{flex-shrink:0;margin-left:auto;justify-content:flex-end}
 .dashboard-toolbar .header-actions button{font-size:12px;white-space:nowrap}
-@media(max-width:700px){.dashboard-toolbar .filters{margin-left:0;flex:1 1 100%;flex-wrap:wrap}.dashboard-toolbar .filters input:not([type=checkbox]){flex:1 1 140px;width:auto}.dashboard-toolbar .metrics{flex-wrap:wrap}.dashboard-toolbar{gap:8px}}
+@media(max-width:700px){.dashboard-toolbar .filters{margin-left:0;flex:1 1 100%;flex-wrap:wrap;justify-content:flex-end}.dashboard-toolbar .filters input:not([type=checkbox]){flex:none;width:96px}.dashboard-toolbar .metrics{flex-wrap:wrap}.dashboard-toolbar{gap:8px}}
 
 .tag-filter summary{display:flex;align-items:center;gap:6px;height:28px;background:var(--vscode-input-background,#202329)}
 .tag-filter summary::-webkit-details-marker{display:none}
@@ -79,3 +79,25 @@ button:disabled{opacity:.4;cursor:default}
 .header-actions .cleanup-unverified{white-space:nowrap;border-color:var(--vscode-button-secondaryBorder,var(--line));background:var(--vscode-button-secondaryBackground,#30343b)}
 
 .extension-card:not(.is-historical) .card-tags{grid-column:1 / 3}
+
+.dashboard-toolbar .filters{align-items:flex-start}
+.group-filter summary>span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.group-filter summary svg{flex-shrink:0}
+.group-filter-options button{width:100%;justify-content:space-between;border:0;padding:5px 7px;min-height:28px;font-size:12px;text-align:left;border-radius:3px}
+.group-filter-options button>span{min-width:0;overflow-wrap:anywhere}
+.group-filter-options button svg{flex-shrink:0}
+.group-filter-options button[aria-pressed=true]{background:var(--vscode-list-activeSelectionBackground,#254b39);color:var(--vscode-list-activeSelectionForeground,#e4f3e9)}
+
+.dashboard-toolbar .tag-filter-options{width:100%;min-width:0;max-width:100%;scrollbar-gutter:stable}
+
+.dashboard-toolbar .filters{position:relative}
+.filter-width-measure{position:absolute;visibility:hidden;pointer-events:none;width:max-content;font-size:12px;height:0;overflow:hidden}
+.filter-width-measure>span{display:block;white-space:nowrap}
+.filter-caption{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tag-filter summary svg{flex-shrink:0}
+
+.sort-menu{position:relative;flex:none;font-size:12px;max-width:min(220px,calc(100vw - 36px))}
+.sort-trigger{width:100%;justify-content:space-between;background:var(--vscode-input-background,#202329);font-size:12px}
+.sort-options{width:100%;min-width:0;max-width:100%;scrollbar-gutter:stable;white-space:normal}
+.group-sort-menu{margin-left:auto;font-weight:400}
+.sort-options button{white-space:normal!important;overflow-wrap:anywhere}
