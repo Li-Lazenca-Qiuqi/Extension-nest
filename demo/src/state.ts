@@ -330,6 +330,8 @@ export function reducer(state: DemoState, action: Action): DemoState {
       return deleteGroup(state, action.id);
     case "reorderGroup":
       return reorderGroup(state, action.id, action.targetId, action.after);
+    case "sortGroups":
+      return {...state,groups:[...state.groups].sort((a,b)=>action.direction*(a.name.localeCompare(b.name)||a.id.localeCompare(b.id)))};
     case "shiftGroup": {
       const groups=[...state.groups];const index=groups.findIndex(g=>g.id===action.id);const target=index+action.direction;
       if(index<0||target<0||target>=groups.length)return state;

@@ -14,7 +14,7 @@ it('moves groups in both directions and ignores the first/last boundaries',()=>{
  expect(moved.groups[1].id).toBe(first);
  expect(reducer(moved,{type:'shiftGroup',id:first,direction:-1})).toEqual(seedState);
 });
-it.each(['name','publisher','id'] as const)('sorts %s within one group and preserves saved order in both views',field=>{
+it.each(['name','publisher'] as const)('sorts %s within one group and preserves saved order in both views',field=>{
  const sorted=reducer(seedState,{type:'sortExtensions',groupId:'python-data',field,direction:-1});
  const expected=seedState.extensions.filter(e=>e.groupId==='python-data').sort((a,b)=>b[field].localeCompare(a[field])||b.id.localeCompare(a.id));
  const restored=migrateState(JSON.parse(JSON.stringify(sorted)))!;
@@ -64,4 +64,12 @@ it('locates insertion across grid rows, skips dragged cards and appends below th
  expect(findCardInsertion(section,['1'],80,50)).toBe('2');
  expect(findCardInsertion(section,[],10,120)).toBe('2');
  expect(findCardInsertion(section,[],400,200)).toBeNull();
+});
+it('sorts custom groups without changing extension assignments or order',()=>{
+ const state={...seedState,groups:[{id:'z',name:'Zulu',color:'#123456'},{id:'b',name:'Alpha',color:'#123456'},{id:'a',name:'Alpha',color:'#123456'}]};
+ const ascending=reducer(state,{type:'sortGroups',direction:1});
+ expect(ascending.groups.map(g=>g.id)).toEqual(['a','b','z']);
+ expect(reducer(state,{type:'sortGroups',direction:-1}).groups.map(g=>g.id)).toEqual(['z','b','a']);
+ expect(ascending.extensions).toBe(state.extensions);
+ expect(groupExtensions(ascending.groups,ascending.extensions).at(-1)?.id).toBe('ungrouped');
 });

@@ -127,7 +127,7 @@ class ExtensionNestHost implements vscode.Disposable {
     register("extensionNest.extensionDown", (value?:unknown)=>this.shiftExtension(value,1));
     register("extensionNest.sortExtensions", async(value?:unknown)=>{
       const groupId=isDemoGroupNode(value)?value.groupId:undefined;if(groupId===undefined)return;
-      const choices=[{label:'Name A–Z',field:'name',direction:1},{label:'Name Z–A',field:'name',direction:-1},{label:'Publisher A–Z',field:'publisher',direction:1},{label:'Publisher Z–A',field:'publisher',direction:-1},{label:'ID A–Z',field:'id',direction:1},{label:'ID Z–A',field:'id',direction:-1}];
+      const choices=[{label:'Name A–Z',field:'name',direction:1},{label:'Name Z–A',field:'name',direction:-1},{label:'Publisher A–Z',field:'publisher',direction:1},{label:'Publisher Z–A',field:'publisher',direction:-1}];
       const choice=await vscode.window.showQuickPick(choices,{placeHolder:'Sort extensions in group'});
       if(choice)await this.dispatchAction({type:'sortExtensions',groupId,field:choice.field,direction:choice.direction});
     });
@@ -449,6 +449,8 @@ function parseAction(value: unknown, state: DemoState): Action | undefined {
         && groupIds.has(value.id) && groupIds.has(value.targetId) && value.id !== value.targetId && (value.after === undefined || typeof value.after === "boolean")
         ? { type: "reorderGroup", id: value.id, targetId: value.targetId, after: value.after as boolean | undefined }
         : undefined;
+    case "sortGroups":
+      return value.direction===1||value.direction===-1 ? {type:"sortGroups",direction:value.direction}:undefined;
     case "shiftGroup":
       return typeof value.id==='string'&&groupIds.has(value.id)&&(value.direction===1||value.direction===-1)
         ? {type:'shiftGroup',id:value.id,direction:value.direction}:undefined;
@@ -457,7 +459,7 @@ function parseAction(value: unknown, state: DemoState): Action | undefined {
         ? {type:'shiftExtension',id:value.id,direction:value.direction}:undefined;
     case "sortExtensions":
       return (value.groupId===null||typeof value.groupId==='string'&&groupIds.has(value.groupId))
-        &&(value.field==='name'||value.field==='publisher'||value.field==='id')&&(value.direction===1||value.direction===-1)
+        &&(value.field==='name'||value.field==='publisher')&&(value.direction===1||value.direction===-1)
         ? {type:'sortExtensions',groupId:value.groupId,field:value.field,direction:value.direction}:undefined;
     default:
       return undefined;
