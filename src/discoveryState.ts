@@ -1,5 +1,6 @@
 import type { DemoState, Extension } from '../demo/src/models';
 import type { OrganizationState } from './organizationState';
+import { t } from './i18n';
 
 export type Observation = Pick<Extension, 'id' | 'name' | 'publisher' | 'description' | 'version'>;
 export interface DiscoveryRecord {
@@ -21,9 +22,9 @@ export function validateObservations(values: readonly Observation[]): Observatio
   return values.map(value => {
     if (!value || typeof value.id !== 'string' || !/^[a-z0-9][a-z0-9-]*\.[a-z0-9][a-z0-9-]*$/i.test(value.id)
       || !['name', 'publisher', 'version'].every(key => typeof value[key as keyof Observation] === 'string' && value[key as keyof Observation].trim())
-      || typeof value.description !== 'string') throw new Error('发现快照包含非法元数据。');
+      || typeof value.description !== 'string') throw new Error(t('Discovery snapshot contains invalid metadata.'));
     const id = value.id.toLowerCase();
-    if (ids.has(id)) throw new Error('发现快照包含重复 ID。');
+    if (ids.has(id)) throw new Error(t('Discovery snapshot contains duplicate IDs.'));
     ids.add(id);
     return { id, name: value.name, publisher: value.publisher, description: value.description, version: value.version };
   });
@@ -33,13 +34,13 @@ export function validateObservations(values: readonly Observation[]): Observatio
 export function parseDiscoveryCache(value: unknown): DiscoveryCache {
   if (value === undefined) return emptyCache();
   const input = value as DiscoveryCache;
-  if (!input || input.schemaVersion !== 1 || !input.records || typeof input.records !== 'object' || Array.isArray(input.records)) throw new Error('发现缓存格式无效。');
+  if (!input || input.schemaVersion !== 1 || !input.records || typeof input.records !== 'object' || Array.isArray(input.records)) throw new Error(t('Discovery cache format is invalid.'));
   const records: DiscoveryCache['records'] = {};
   for (const [id, record] of Object.entries(input.records)) {
     if (!record || record.source !== 'public-local-host' || !isTimestamp(record.firstSeenAt) || !isTimestamp(record.lastSeenAt)
-      || Date.parse(record.firstSeenAt) > Date.parse(record.lastSeenAt)) throw new Error('发现缓存时间或来源无效。');
+      || Date.parse(record.firstSeenAt) > Date.parse(record.lastSeenAt)) throw new Error(t('Discovery cache time or source is invalid.'));
     const metadata = validateObservations([record.lastSeenMetadata])[0];
-    if (id !== metadata.id) throw new Error('发现缓存 ID 不一致。');
+    if (id !== metadata.id) throw new Error(t('Discovery cache ID does not match its metadata.'));
     records[id] = { source: 'public-local-host', firstSeenAt: record.firstSeenAt, lastSeenAt: record.lastSeenAt, lastSeenMetadata: metadata };
   }
   return { schemaVersion: 1, records };
@@ -47,7 +48,7 @@ export function parseDiscoveryCache(value: unknown): DiscoveryCache {
 
 /** 只有真实成功读取才能推进历史时间；函数不修改传入缓存。 */
 export function observe(cache: DiscoveryCache, values: readonly Observation[], now: string): DiscoveryCache {
-  if (!isTimestamp(now)) throw new Error('发现时间必须为 UTC ISO 8601。');
+  if (!isTimestamp(now)) throw new Error(t('Discovery time must be a UTC ISO 8601 timestamp.'));
   const records = { ...cache.records };
   for (const metadata of validateObservations(values)) {
     const old = records[metadata.id];

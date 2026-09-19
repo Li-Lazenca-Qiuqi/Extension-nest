@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { loadState, reducer, saveState, validateState } from './state';
 import type { Action, DemoState } from './models';
+import { t } from './uiI18n';
 type HostApi={postMessage:(message:unknown)=>void};
 declare global { interface Window { acquireVsCodeApi?:()=>HostApi } }
 const host=window.acquireVsCodeApi?.();
@@ -18,10 +19,10 @@ export function useDemoStore(){
   else if(message.type==='icons'&&message.icons&&typeof message.icons==='object')setIcons(message.icons);
  };window.addEventListener('message',listener);host.postMessage({type:'ready'});return()=>window.removeEventListener('message',listener)},[]);
  useEffect(()=>{if(!host)setSaved(saveState(state))},[state]);
- function dispatch(action:Action){if(state.readOnly){setHostError('Read-only: organization data cannot be changed. Discovery changes are available only in this session and are not saved.');return}if(host)host.postMessage({type:'action',action});else setState(current=>reducer(current,action))}
+ function dispatch(action:Action){if(state.readOnly){setHostError(t('errors.readOnly'));return}if(host)host.postMessage({type:'action',action});else setState(current=>reducer(current,action))}
  function openExtension(id:string){
   if(host)host.postMessage({type:'openExtension',id});
-  else setHostError('Open this dashboard in VS Code to view the extension page.');
+  else setHostError(t('errors.openInVsCode'));
  }
  function cleanupUnverified(){
   if(!host||!ready||state.readOnly||state.freshness!=='Ready'||!state.extensions.some(extension=>extension.visibility==='Unverified'))return;

@@ -1,19 +1,20 @@
 import * as vscode from 'vscode';
 import type { DemoState } from '../demo/src/models';
+import { t } from './i18n';
 
 /** 仅允许打开当前清单中的完整扩展 ID，不接受任意命令或 URI。 */
 export async function openNativeExtension(id: unknown, state: DemoState): Promise<'Opened' | 'Cancelled' | 'Failed'> {
   if (typeof id !== 'string' || !/^[a-z0-9][a-z0-9-]*\.[a-z0-9][a-z0-9-]*$/i.test(id)
     || !state.extensions.some(extension => extension.id === id)) {
-    throw new Error('Invalid extension ID.');
+    throw new Error(t('Invalid extension ID.'));
   }
   try {
     await vscode.commands.executeCommand('extension.open', id);
     return 'Opened';
   } catch {
-    const recovery = '在 VS Code 中查找';
+    const recovery = t('Find in VS Code');
     const choice = await vscode.window.showErrorMessage(
-      `无法打开扩展 ${id} 的原生页面。可以在 VS Code 扩展视图中查找。`, recovery,
+      t("Unable to open extension {id}'s native page. Find it in the VS Code Extensions view.", { id }), recovery,
     );
     if (choice === recovery) {
       try {

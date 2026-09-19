@@ -92,7 +92,7 @@ describe('公开发现与组织存储', () => {
     await repo.refresh(() => [item], false);
     expect(repo.state.extensions[0].visibility).toBe('Visible');
     expect(db.values.size).toBe(0);
-    await expect(repo.save(repo.state)).rejects.toThrow('只读');
+    await expect(repo.save(repo.state)).rejects.toThrow('read-only');
     await repo.refresh(() => [], false);
     expect(repo.state.extensions[0].visibility).toBe('NotVisible');
   });

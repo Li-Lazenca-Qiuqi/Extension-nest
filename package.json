@@ -1,7 +1,7 @@
 {
   "name": "extension-nest-demo",
   "displayName": "Extension Nest Demo",
-  "description": "Organize extensions visible to the local VS Code host with groups, tags, and a native Dashboard.",
+  "description": "%description%",
   "version": "0.2.1",
   "private": true,
   "publisher": "Lazenca",
@@ -29,7 +29,7 @@
     "colors": [
       {
         "id": "extensionNest.group.purple",
-        "description": "Extension Nest 紫色分类图标",
+        "description": "%color.purple%",
         "defaults": {
           "dark": "#7C3AED",
           "light": "#7C3AED",
@@ -39,7 +39,7 @@
       },
       {
         "id": "extensionNest.group.blue",
-        "description": "Extension Nest 蓝色分类图标",
+        "description": "%color.blue%",
         "defaults": {
           "dark": "#2563EB",
           "light": "#2563EB",
@@ -49,7 +49,7 @@
       },
       {
         "id": "extensionNest.group.orange",
-        "description": "Extension Nest 橙色分类图标",
+        "description": "%color.orange%",
         "defaults": {
           "dark": "#D97706",
           "light": "#D97706",
@@ -59,7 +59,7 @@
       },
       {
         "id": "extensionNest.group.green",
-        "description": "Extension Nest 绿色分类图标",
+        "description": "%color.green%",
         "defaults": {
           "dark": "#059669",
           "light": "#059669",
@@ -69,7 +69,7 @@
       },
       {
         "id": "extensionNest.group.pink",
-        "description": "Extension Nest 粉色分类图标",
+        "description": "%color.pink%",
         "defaults": {
           "dark": "#DB2777",
           "light": "#DB2777",
@@ -79,7 +79,7 @@
       },
       {
         "id": "extensionNest.group.cyan",
-        "description": "Extension Nest 青色分类图标",
+        "description": "%color.cyan%",
         "defaults": {
           "dark": "#0EA5E9",
           "light": "#0EA5E9",
@@ -110,85 +110,85 @@
     "commands": [
       {
         "command": "extensionNest.inspectCapabilities",
-        "title": "检查原生数据通路（只读）",
+        "title": "%command.inspectCapabilities%",
         "category": "Extension Nest"
       },
       {
         "command": "extensionNest.openDashboard",
-        "title": "Open Extension Nest Dashboard",
+        "title": "%command.openDashboard%",
         "icon": "$(dashboard)",
         "category": "Extension Nest"
       },
       {
         "command": "extensionNest.showGroups",
-        "title": "Show Extension Nest Groups",
+        "title": "%command.showGroups%",
         "category": "Extension Nest"
       },
       {
         "command": "extensionNest.createGroup",
-        "title": "Create Group",
+        "title": "%command.createGroup%",
         "icon": "$(add)",
         "category": "Extension Nest"
       },
       {
         "command": "extensionNest.renameGroup",
-        "title": "Rename Group",
+        "title": "%command.renameGroup%",
         "category": "Extension Nest"
       },
       {
         "command": "extensionNest.deleteGroup",
-        "title": "Delete Group",
+        "title": "%command.deleteGroup%",
         "category": "Extension Nest"
       },
       {
         "command": "extensionNest.setTags",
-        "title": "Edit Extension Tags",
+        "title": "%command.setTags%",
         "category": "Extension Nest"
       },
       {
         "command": "extensionNest.groupUp",
-        "title": "Move Group Up",
+        "title": "%command.groupUp%",
         "category": "Extension Nest"
       },
       {
         "command": "extensionNest.groupDown",
-        "title": "Move Group Down",
+        "title": "%command.groupDown%",
         "category": "Extension Nest"
       },
       {
         "command": "extensionNest.extensionUp",
-        "title": "Move Extension Up",
+        "title": "%command.extensionUp%",
         "category": "Extension Nest"
       },
       {
         "command": "extensionNest.extensionDown",
-        "title": "Move Extension Down",
+        "title": "%command.extensionDown%",
         "category": "Extension Nest"
       },
       {
         "command": "extensionNest.sortExtensions",
-        "title": "Sort Extensions",
+        "title": "%command.sortExtensions%",
         "category": "Extension Nest"
       },
       {
         "command": "extensionNest.refresh",
-        "title": "Refresh",
+        "title": "%command.refresh%",
         "category": "Extension Nest",
         "icon": "$(refresh)"
       },
       {
         "command": "extensionNest.openExtension",
-        "title": "Open extension page",
+        "title": "%command.openExtension%",
         "category": "Extension Nest"
       },
       {
         "command": "extensionNest.copyId",
-        "title": "Copy Extension ID",
+        "title": "%command.copyId%",
         "category": "Extension Nest"
       },
       {
         "command": "extensionNest.cleanupUnverified",
-        "title": "清理旧记录",
+        "title": "%command.cleanupUnverified%",
         "category": "Extension Nest"
       }
     ],
@@ -279,7 +279,7 @@
         "extensionNest.showBuiltinExtensions": {
           "type": "boolean",
           "default": false,
-          "description": "显示随当前 VS Code 应用分发的内置扩展。默认从列表和统计中隐藏，历史与组织数据仍保留。"
+          "description": "%configuration.showBuiltinExtensions%"
         }
       }
     }

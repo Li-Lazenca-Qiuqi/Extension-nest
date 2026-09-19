@@ -3,13 +3,14 @@ import { act, createElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import { beforeAll, afterEach, expect, it, vi } from 'vitest';
 import { seedState } from './seed';
+import { setUiLanguage } from './uiI18n';
 import type AppType from './App';
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT=true;
 let App:typeof AppType;
 let cleanup=()=>{};
 const postMessage=vi.fn();
 beforeAll(async()=>{window.acquireVsCodeApi=()=>({postMessage});App=(await import('./App')).default});
-afterEach(()=>{cleanup();document.body.innerHTML='';postMessage.mockClear()});
+afterEach(()=>{cleanup();document.body.innerHTML='';postMessage.mockClear();setUiLanguage(undefined)});
 it('keeps visibility independent from Ungrouped and places cleanup last',()=>{
  const node=document.createElement('div');document.body.append(node);const root=createRoot(node);
  act(()=>root.render(createElement(App)));cleanup=()=>act(()=>root.unmount());
@@ -46,4 +47,22 @@ it('shows an empty group when selected or found by name without a no-results not
  act(()=>Array.from(node.querySelectorAll<HTMLButtonElement>('.group-filter-options button')).find(b=>b.textContent==='Research Lab')!.click());
  expect(node.querySelector('[data-group-section="empty"]')).not.toBeNull();
  expect(node.querySelector('.discovery-empty')).toBeNull();
+});
+
+it.each([
+ {language:'zh-cn',labels:['全部','可见','未发现'],sort:'排序分组',descending:'名称 Z–A'},
+ {language:'en',labels:['All','Visible','Not found'],sort:'Sort groups',descending:'Name Z–A'},
+])('renders $language without translating user data or action values',({language,labels,sort,descending})=>{
+ setUiLanguage(language);
+ const node=document.createElement('div');document.body.append(node);const root=createRoot(node);
+ act(()=>root.render(createElement(App)));cleanup=()=>act(()=>root.unmount());
+ const state={...seedState,freshness:'Ready' as const};
+ act(()=>window.dispatchEvent(new MessageEvent('message',{data:{type:'state',state}})));
+ expect([...node.querySelectorAll('.metrics button>span')].map(element=>element.textContent)).toEqual(labels);
+ expect(node.textContent).toContain('AI Coding');
+ expect(node.querySelector('[data-extension="openai.codex"]')).not.toBeNull();
+ act(()=>node.querySelector<HTMLButtonElement>(`[aria-label="${sort}"]`)!.click());
+ act(()=>[...node.querySelectorAll<HTMLButtonElement>('.header-actions .sort-options button')].find(button=>button.textContent===descending)!.click());
+ expect(postMessage).toHaveBeenCalledWith({type:'action',action:{type:'sortGroups',direction:-1}});
+ expect(state).toEqual({...seedState,freshness:'Ready'});
 });

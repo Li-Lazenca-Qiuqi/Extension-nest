@@ -10,7 +10,7 @@ const mock = vi.hoisted(() => ({
 
 vi.mock('vscode', () => ({
   version: '1.137.0',
-  env: { appName: 'Visual Studio Code', uiKind: 1, remoteName: 'ssh-remote' },
+  env: { language: 'en', appName: 'Visual Studio Code', uiKind: 1, remoteName: 'ssh-remote' },
   commands: mock,
   extensions: { all: [{
     id: 'sample.inactive', isActive: false, extensionKind: 2,

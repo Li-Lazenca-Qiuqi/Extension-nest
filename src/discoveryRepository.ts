@@ -1,6 +1,7 @@
 import type { DemoState } from '../demo/src/models';
 import { migrateDemoOrganization, parseOrganizationState, type OrganizationState } from './organizationState';
 import { emptyCache, emptyOrganization, observe, parseDiscoveryCache, projectDiscovery, validateObservations, type DiscoveryCache, type Observation } from './discoveryState';
+import { t } from './i18n';
 
 export interface StateStorage { get<T>(key: string): T | undefined; update(key: string, value: unknown): Thenable<void> | Promise<void> }
 export const ORGANIZATION_KEY = 'extensionNest.state';
@@ -62,7 +63,7 @@ export class DiscoveryRepository {
   }
 
   async save(next: DemoState, current: () => boolean = () => true): Promise<void> {
-    if (this.state.readOnly) throw new Error('当前窗口只读。请关闭其他 Extension Nest 窗口后重新加载此窗口。');
+    if (this.state.readOnly) throw new Error(t('This window is read-only. Close other Extension Nest windows and reload this window.'));
     const organization = migrateDemoOrganization(next);
     // 视图过滤不能隐式删除内置项的组织关系；删除分组时仍解除该组的所有归属。
     const groups = new Set(organization.groups.map(group => group.id));
@@ -94,7 +95,7 @@ export class DiscoveryRepository {
   async cleanupUnverified(ids: readonly string[], current: () => boolean = () => true): Promise<number> {
     const candidates = new Set(this.cleanupCandidates().map(extension => extension.id));
     const selected = new Set(ids);
-    if (!selected.size || [...selected].some(id => !candidates.has(id))) throw new Error('清理列表已变化或窗口不可写，请刷新后重新预览。');
+    if (!selected.size || [...selected].some(id => !candidates.has(id))) throw new Error(t('The cleanup list changed or this window is not writable. Refresh and preview it again.'));
     const after = parseOrganizationState(this.organization);
     for (const id of selected) { delete after.assignments[id]; delete after.tags[id]; }
     after.extensionOrder = after.extensionOrder.filter(id => !selected.has(id));

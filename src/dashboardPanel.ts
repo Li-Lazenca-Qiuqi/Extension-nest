@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { randomBytes } from "node:crypto";
 import type { DemoState } from "../demo/src/models";
 import { loadExtensionIcon } from "./extensionIcons";
+import { escapeHtml, t } from "./i18n";
 
 /** Dashboard 可以请求宿主执行的回调集合。 */
 export interface DashboardHostCallbacks {
@@ -41,7 +42,7 @@ export class DashboardPanel {
 
     const panel = vscode.window.createWebviewPanel(
       "extensionNest.dashboard",
-      "Extension Nest Dashboard",
+      t("Extension Nest Dashboard"),
       vscode.ViewColumn.One,
       {
         enableScripts: true,
@@ -134,7 +135,9 @@ export class DashboardPanel {
         try {
           await this.callbacks.onOpenExtension(message.id);
         } catch (error) {
-          await this.postError(`Unable to open extension: ${error instanceof Error ? error.message : String(error)}`);
+          await this.postError(t("Unable to open extension: {error}", {
+            error: error instanceof Error ? error.message : String(error),
+          }));
         }
         return;
       default:
@@ -163,6 +166,8 @@ export class DashboardPanel {
         const transformed = this.toWebviewResource(webview, distUri, rawPath);
         return `${attribute}=${quote}${transformed}${quote}`;
       });
+      html = injectHtmlLanguage(html, vscode.env.language);
+      html = replaceHtmlTitle(html, t("Extension Nest Dashboard"));
       html = html.replace(/<script\b(?![^>]*\bnonce=)/gi, `<script nonce="${nonce}"`);
       const csp = [
         "default-src 'none'",
@@ -206,15 +211,15 @@ export class DashboardPanel {
       `script-src 'nonce-${nonce}'`,
     ].join("; ");
     return `<!doctype html>
-<html lang="en">
+<html lang="${escapeHtml(vscode.env.language)}">
   <head>
     <meta charset="UTF-8">
     <meta http-equiv="Content-Security-Policy" content="${csp}">
-    <title>Extension Nest Dashboard</title>
+    <title>${escapeHtml(t("Extension Nest Dashboard"))}</title>
   </head>
   <body>
-    <h1>Extension Nest Dashboard</h1>
-    <p>Run the extension build to create the dashboard bundle.</p>
+    <h1>${escapeHtml(t("Extension Nest Dashboard"))}</h1>
+    <p>${escapeHtml(t("Run the extension build to create the dashboard bundle."))}</p>
   </body>
 </html>`;
   }
@@ -223,6 +228,31 @@ export class DashboardPanel {
 /** 生成只用于 CSP script-src 的随机 nonce。 */
 function createNonce(): string {
   return randomBytes(16).toString("base64");
+}
+
+/** 覆盖构建产物的语言属性，保留其他根元素属性并拒绝属性注入。 */
+function injectHtmlLanguage(html: string, language: string): string {
+  const safeLanguage = escapeHtml(language);
+  const htmlTagPattern = /<html\b([^>]*)>/i;
+  if (htmlTagPattern.test(html)) {
+    return html.replace(htmlTagPattern, (_match, attributes: string) => {
+      const withoutLanguage = attributes.replace(/\s+lang\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/i, "");
+      return `<html${withoutLanguage} lang="${safeLanguage}">`;
+    });
+  }
+  return `<html lang="${safeLanguage}">\n${html}`;
+}
+
+/** 覆盖构建产物的标题，避免浏览器标签页继续显示默认英文标题。 */
+function replaceHtmlTitle(html: string, title: string): string {
+  const safeTitle = escapeHtml(title);
+  if (/<title\b[^>]*>[\s\S]*?<\/title>/i.test(html)) {
+    return html.replace(/<title\b[^>]*>[\s\S]*?<\/title>/i, `<title>${safeTitle}</title>`);
+  }
+  if (/<head\b[^>]*>/i.test(html)) {
+    return html.replace(/<head\b[^>]*>/i, match => `${match}\n<title>${safeTitle}</title>`);
+  }
+  return `<title>${safeTitle}</title>\n${html}`;
 }
 
 /** 判断消息是否为普通对象，避免执行 Webview 传入的原型对象。 */

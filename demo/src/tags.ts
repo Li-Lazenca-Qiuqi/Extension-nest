@@ -1,3 +1,5 @@
+import { t } from './uiI18n';
+
 const MAX_TAG_LENGTH = 30;
 const MAX_TAG_COUNT = 10;
 
@@ -7,14 +9,14 @@ const MAX_TAG_COUNT = 10;
  */
 export function normalizeTags(input: string[]): string[] {
   if (!Array.isArray(input)) {
-    throw new TypeError("Tags must be an array.");
+    throw new TypeError(t('tags.mustBeArray'));
   }
 
   const tags: string[] = [];
   const seen = new Set<string>();
   for (const value of input) {
     if (typeof value !== "string") {
-      throw new TypeError("Each tag must be a string.");
+      throw new TypeError(t('tags.mustBeString'));
     }
 
     const tag = value.trim();
@@ -22,7 +24,7 @@ export function normalizeTags(input: string[]): string[] {
       continue;
     }
     if (Array.from(tag).length > MAX_TAG_LENGTH) {
-      throw new RangeError(`Each tag must be ${MAX_TAG_LENGTH} characters or fewer.`);
+      throw new RangeError(t('tags.maxLength',{count:MAX_TAG_LENGTH}));
     }
 
     const key = tag.toLocaleLowerCase();
@@ -32,7 +34,7 @@ export function normalizeTags(input: string[]): string[] {
     seen.add(key);
     tags.push(tag);
     if (tags.length > MAX_TAG_COUNT) {
-      throw new RangeError(`A maximum of ${MAX_TAG_COUNT} tags is allowed.`);
+      throw new RangeError(t('tags.maxCount',{count:MAX_TAG_COUNT}));
     }
   }
 

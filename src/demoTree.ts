@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import type { Action, DemoState, Extension, Group } from "../demo/src/models";
 import { groupColorToken } from "../demo/src/groupColors";
+import { t } from "./i18n";
 
 /** 将现有分类色板映射到可被 VS Code 主题覆盖的图标颜色。 */
 function groupIconColor(color: string | undefined): vscode.ThemeColor {
@@ -122,11 +123,11 @@ export class DemoTreeProvider
       treeItem.id = `extension-nest-group:${element.groupId ?? "ungrouped"}`;
       treeItem.contextValue = element.groupId === null ? "extensionNest.ungrouped" : "extensionNest.group";
       treeItem.description = `${extensions.length}`;
-      treeItem.tooltip = `${element.label} (${extensions.length} known extensions)`;
+      treeItem.tooltip = `${element.label} (${t("{count} known extensions", { count: extensions.length })})`;
       treeItem.iconPath = new vscode.ThemeIcon(element.groupId === null ? "inbox" : "layers", groupIconColor(element.color));
       treeItem.command = {
         command: "extensionNest.openDashboard",
-        title: "Open Extension Nest Dashboard",
+        title: t("Open Extension Nest Dashboard"),
         arguments: [element.groupId === null ? "ungrouped" : element.groupId],
       };
       return treeItem;
@@ -134,26 +135,28 @@ export class DemoTreeProvider
 
     const extension = element.extension;
     const treeItem = new vscode.TreeItem(extension.name, vscode.TreeItemCollapsibleState.None);
-    const status = extension.visibility === "Visible" ? "" : "Not found";
+    const status = extension.visibility === "Visible" ? "" : t("Not found");
     treeItem.id = `extension-nest-extension:${extension.id}`;
     treeItem.contextValue = "extensionNest.extension";
     treeItem.description = `${extension.publisher} · v${extension.version}${status ? ` · ${status}` : ""}`;
     treeItem.tooltip = [
       `${extension.name} (${extension.id})`,
       extension.description,
-      `Publisher: ${extension.publisher}`,
-      `${extension.visibility === "Visible" ? "Version" : "Last seen version"}: ${extension.version}`,
-      status ? `Status: ${status}` : undefined,
-      status ? 'Not found in the latest discovery. This does not confirm disabling or removal.' : undefined,
-      extension.lastSeenAt ? `Last seen: ${extension.lastSeenAt}` : undefined,
-      `Tags: ${extension.tags.length > 0 ? extension.tags.join(", ") : "None"}`,
+      t("Publisher: {publisher}", { publisher: extension.publisher }),
+      extension.visibility === "Visible"
+        ? t("Version: {version}", { version: extension.version })
+        : t("Last seen version: {version}", { version: extension.version }),
+      status ? t("Status: {status}", { status }) : undefined,
+      status ? t("Not found in the latest discovery. This does not confirm disabling or removal.") : undefined,
+      extension.lastSeenAt ? t("Last seen: {timestamp}", { timestamp: extension.lastSeenAt }) : undefined,
+      t("Tags: {tags}", { tags: extension.tags.length > 0 ? extension.tags.join(", ") : t("None") }),
     ]
       .filter((line): line is string => Boolean(line))
       .join("\n");
     treeItem.iconPath = new vscode.ThemeIcon("extensions", groupIconColor(this.state.groups.find(group => group.id === element.groupId)?.color));
     treeItem.command = {
       command: "extensionNest.openDashboard",
-      title: "Open Extension Nest Dashboard",
+      title: t("Open Extension Nest Dashboard"),
       arguments: [element.groupId === null ? "ungrouped" : element.groupId],
     };
     return treeItem;
@@ -253,7 +256,7 @@ export class DemoTreeProvider
   private createGroupNode(group: Group | null): DemoGroupNode {
     return group
       ? new DemoGroupNode(group.id, group.name, group.color)
-      : new DemoGroupNode(null, "Ungrouped", undefined);
+      : new DemoGroupNode(null, t("Ungrouped"), undefined);
   }
 }
 

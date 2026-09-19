@@ -6,8 +6,10 @@ import { showCapabilityProbe } from "./capabilityProbe";
 import type { Action, DemoState, Group } from "../demo/src/models";
 import { reducer } from "../demo/src/state";
 import { normalizeTags } from "../demo/src/tags";
+import { setUiLanguage } from "../demo/src/uiI18n";
 import { openNativeExtension } from "./nativeExtensions";
 import { DashboardPanel, type DashboardFilter, type DashboardHostCallbacks } from "./dashboardPanel";
+import { t } from "./i18n";
 import {
   DemoExtensionNode,
   DemoGroupNode,
@@ -21,6 +23,7 @@ const VIEW_ID = "extensionNest.groups";
 
 /** 扩展激活时创建扩展宿主、原生树和编辑器 Dashboard。 */
 export function activate(context: vscode.ExtensionContext): { getSnapshot(): DemoState } | undefined {
+  setUiLanguage(vscode.env.language);
   const host = new ExtensionNestHost(context);
   host.start();
   context.subscriptions.push(host);
@@ -63,7 +66,7 @@ class ExtensionNestHost implements vscode.Disposable {
       onAction: (action) => this.dispatchAction(action),
       onShowGroups: () => this.focusGroupsView(),
       onOpenExtension: async (id) => {
-        if (await openNativeExtension(id, this.state) === 'Failed') throw new Error('原生扩展页面导航失败。');
+        if (await openNativeExtension(id, this.state) === 'Failed') throw new Error(t("Native extension page navigation failed."));
       },
       onRefresh: () => this.refresh(),
       onCleanupUnverified: () => this.cleanupUnverified(),
@@ -110,7 +113,7 @@ class ExtensionNestHost implements vscode.Disposable {
     register("extensionNest.cleanupUnverified", () => this.cleanupUnverified());
     register("extensionNest.openExtension", async (value?: unknown) => {
       const id = getExtensionId(value, this.state);
-      if (id && await openNativeExtension(id, this.state) === "Failed") this.reportError("原生扩展页面导航失败。");
+      if (id && await openNativeExtension(id, this.state) === "Failed") this.reportError(t("Native extension page navigation failed."));
     });
     register("extensionNest.copyId", async (value?: unknown) => {
       const id = getExtensionId(value, this.state);
@@ -127,8 +130,8 @@ class ExtensionNestHost implements vscode.Disposable {
     register("extensionNest.extensionDown", (value?:unknown)=>this.shiftExtension(value,1));
     register("extensionNest.sortExtensions", async(value?:unknown)=>{
       const groupId=isDemoGroupNode(value)?value.groupId:undefined;if(groupId===undefined)return;
-      const choices=[{label:'Name A–Z',field:'name',direction:1},{label:'Name Z–A',field:'name',direction:-1},{label:'Publisher A–Z',field:'publisher',direction:1},{label:'Publisher Z–A',field:'publisher',direction:-1}];
-      const choice=await vscode.window.showQuickPick(choices,{placeHolder:'Sort extensions in group'});
+      const choices=[{label:t('Name A–Z'),field:'name',direction:1},{label:t('Name Z–A'),field:'name',direction:-1},{label:t('Publisher A–Z'),field:'publisher',direction:1},{label:t('Publisher Z–A'),field:'publisher',direction:-1}];
+      const choice=await vscode.window.showQuickPick(choices,{placeHolder:t('Sort extensions in group')});
       if(choice)await this.dispatchAction({type:'sortExtensions',groupId,field:choice.field,direction:choice.direction});
     });
   }
@@ -141,24 +144,30 @@ class ExtensionNestHost implements vscode.Disposable {
   private async cleanupUnverified(): Promise<void> {
     await this.refresh();
     if (this.state.readOnly || this.state.freshness !== 'Ready') {
-      this.reportError('当前窗口不可清理。请先解决读取错误，或在可写窗口操作。'); return;
+      this.reportError(t('Current window cannot clean up records. Resolve the read error first or use a writable window.')); return;
     }
     const candidates = this.repository.cleanupCandidates();
-    if (!candidates.length) { void vscode.window.showInformationMessage('没有可清理的旧记录。已发现后不可见的历史记录不会被自动清理。'); return; }
+    if (!candidates.length) {
+      void vscode.window.showInformationMessage(t('No old records can be cleaned up. Previously discovered records that are not currently visible are kept.'));
+      return;
+    }
     const selected = await vscode.window.showQuickPick(candidates.map(extension => ({
       label: extension.id,
-      description: 'Not found',
-      detail: `Group: ${this.state.groups.find(group => group.id === extension.groupId)?.name ?? 'Ungrouped'} · Tags: ${extension.tags.join(', ') || 'None'}`,
+      description: t('Not found'),
+      detail: t('Group: {group} · Tags: {tags}', {
+        group: this.state.groups.find(group => group.id === extension.groupId)?.name ?? t('Ungrouped'),
+        tags: extension.tags.join(', ') || t('None'),
+      }),
       extension,
-    })), { canPickMany: true, ignoreFocusOut: true, title: '清理旧记录',
-      placeHolder: '选择确认不需要的旧记录；本次未发现不等于已卸载。仅清理本插件记录，不卸载扩展。' });
+    })), { canPickMany: true, ignoreFocusOut: true, title: t('Clean up old records'),
+      placeHolder: t("Select old records you no longer need. Not found in this scan does not mean uninstalled. Only this extension's records will be removed; extensions will not be uninstalled.") });
     if (!selected?.length) return;
     const ids = selected.map(item => item.extension.id);
-    const confirmed = await vscode.window.showWarningMessage(`清理这 ${ids.length} 条旧记录？`, {
+    const confirmed = await vscode.window.showWarningMessage(t('Clean up these {count} old records?', { count: ids.length }), {
       modal: true,
-      detail: `${ids.join('\n')}\n\n将移除这些 ID 的分组归属、标签和顺序记录。分组本身及真实发现历史保留。永久删除，不创建备份，无法通过本插件恢复。`,
-    }, '永久删除');
-    if (confirmed !== '永久删除') return;
+      detail: `${ids.join('\n')}\n\n${t('The group assignments, tags, and order records for these IDs will be removed. Groups and real discovery history will be kept. This is permanent, no backup is created, and this extension cannot restore the records.')}`,
+    }, t('Delete permanently'));
+    if (confirmed !== t('Delete permanently')) return;
     await this.enqueue(async () => {
       if (this.disposed) return;
       try {
@@ -166,12 +175,12 @@ class ExtensionNestHost implements vscode.Disposable {
         for (const item of selected) {
           const latest = this.state.extensions.find(extension => extension.id === item.extension.id);
           if (!latest || latest.groupId !== item.extension.groupId || JSON.stringify(latest.tags) !== JSON.stringify(item.extension.tags)) {
-            throw new Error('预览后记录已变化，请重新预览清理列表。');
+            throw new Error(t('Previewed records changed. Review the cleanup list again.'));
           }
         }
         const count = await this.repository.cleanupUnverified(ids, () => !this.disposed);
         this.state = this.repository.state; this.notifyStateChanged();
-        if (!this.disposed) void vscode.window.showInformationMessage(`已永久删除 ${count} 条旧记录。`);
+        if (!this.disposed) void vscode.window.showInformationMessage(t('Permanently deleted {count} old records.', { count }));
       } catch (error) { this.reportError(getErrorMessage(error)); }
     });
   }
@@ -202,8 +211,8 @@ class ExtensionNestHost implements vscode.Disposable {
   /** 提示用户创建一个分组并通过宿主动作管线提交。 */
   private async createGroup(): Promise<void> {
     const name = await vscode.window.showInputBox({
-      prompt: "Create a demo extension group",
-      placeHolder: "Group name",
+      prompt: t("Create an extension group"),
+      placeHolder: t("Group name"),
       ignoreFocusOut: true,
       validateInput: (value) => validateGroupNameInput(value, this.state.groups),
     });
@@ -221,7 +230,7 @@ class ExtensionNestHost implements vscode.Disposable {
     }
 
     const name = await vscode.window.showInputBox({
-      prompt: `Rename group “${group.name}”`,
+      prompt: t("Rename group “{name}”", { name: group.name }),
       value: group.name,
       ignoreFocusOut: true,
       validateInput: (input) => validateGroupNameInput(input, this.state.groups, group.id),
@@ -240,12 +249,12 @@ class ExtensionNestHost implements vscode.Disposable {
     }
 
     const choice = await vscode.window.showWarningMessage(
-      `Delete the group “${group.name}”? Its known extensions will become Ungrouped; no real extension will be affected.`,
+      t("Delete the group “{name}”? Its known extensions will become Ungrouped; no real extension will be affected.", { name: group.name }),
       { modal: true },
-      "Delete Group",
-      "Cancel",
+      t("Delete Group"),
+      t("Cancel"),
     );
-    if (choice === "Delete Group") {
+    if (choice === t("Delete Group")) {
       await this.dispatchAction({ type: "deleteGroup", id: group.id });
     }
   }
@@ -258,10 +267,13 @@ class ExtensionNestHost implements vscode.Disposable {
     }
 
     const firstExtension = this.state.extensions.find((extension) => extension.id === ids[0]);
+    const target = ids.length === 1
+      ? firstExtension?.name ?? t("extension")
+      : t("{count} extensions", { count: ids.length });
     const input = await vscode.window.showInputBox({
-      prompt: `Edit tags for ${ids.length === 1 ? firstExtension?.name ?? "extension" : `${ids.length} extensions`}`,
+      prompt: t("Edit tags for {target}", { target }),
       value: firstExtension?.tags.join(", ") ?? "",
-      placeHolder: "tag1, tag2, tag3",
+      placeHolder: t("tag1, tag2, tag3"),
       ignoreFocusOut: true,
       validateInput: (raw) => validateTagsInput(raw),
     });
@@ -279,7 +291,7 @@ class ExtensionNestHost implements vscode.Disposable {
   private dispatchAction(input: unknown): Promise<void> {
     return this.enqueue(async () => {
       if (this.disposed || this.state.readOnly) {
-        this.reportError("当前窗口只读；请关闭其他 Extension Nest 窗口后重新加载此窗口，或修复读取错误后刷新。");
+        this.reportError(t("This window is read-only. Close other Extension Nest windows and reload this window, or resolve the read error and refresh."));
         return;
       }
       const action = parseAction(input, this.state);
@@ -314,7 +326,7 @@ class ExtensionNestHost implements vscode.Disposable {
       this.repository.fail(error);
       this.state = this.repository.state;
       this.notifyStateChanged();
-      this.reportError(`Could not save Extension Nest state: ${getErrorMessage(error)}`);
+      this.reportError(t("Could not save Extension Nest state: {error}", { error: getErrorMessage(error) }));
       return false;
     }
   }
@@ -328,7 +340,9 @@ class ExtensionNestHost implements vscode.Disposable {
   /** 把状态更新广播给原生树和已打开的 Dashboard。 */
   private notifyStateChanged(): void {
     if (this.disposed) return;
-    this.treeView.message = this.state.error ?? (this.state.readOnly ? "Read-only · Close other Extension Nest windows and reload to edit." : "Local host · " + (this.state.freshness ?? "Loading"));
+    this.treeView.message = this.state.error ?? (this.state.readOnly
+      ? t("Read-only · Close other Extension Nest windows and reload to edit.")
+      : t("Local host · {status}", { status: translateFreshness(this.state.freshness) }));
     this.tree.setState(this.state);
     void this.dashboard.postState(this.state);
   }
@@ -372,7 +386,7 @@ class ExtensionNestHost implements vscode.Disposable {
       }
       await this.repository.refresh(() => {
         if (vscode.env.uiKind !== vscode.UIKind.Desktop || this.context.extension.extensionKind !== vscode.ExtensionKind.UI
-          || this.context.extensionUri.scheme !== 'file') throw new Error('需要桌面版 VS Code 的本地 UI 扩展宿主。');
+          || this.context.extensionUri.scheme !== 'file') throw new Error(t('Desktop VS Code with a local UI extension host is required.'));
         return vscode.extensions.all.map(extension => {
           const manifest = extension.packageJSON;
           return { id: extension.id, name: manifest.displayName || manifest.name || extension.id,
@@ -470,16 +484,16 @@ function parseAction(value: unknown, state: DemoState): Action | undefined {
 function validateGroupNameInput(value: string, groups: readonly Group[], currentId?: string): string | undefined {
   const name = value.trim();
   if (name.length === 0) {
-    return "Group name cannot be empty.";
+    return t("Group name cannot be empty.");
   }
-  if (name.toLowerCase() === "ungrouped") { return "Ungrouped is reserved for unassigned extensions."; }
+  if (name.toLowerCase() === "ungrouped") { return t("Ungrouped is reserved for unassigned extensions."); }
   if (Array.from(name).length > 50) {
-    return "Group name must be 50 characters or fewer.";
+    return t("Group name must be 50 characters or fewer.");
   }
   const duplicate = groups.some(
     (group) => group.id !== currentId && group.name.trim().toLocaleLowerCase() === name.toLocaleLowerCase(),
   );
-  return duplicate ? "A group with this name already exists." : undefined;
+  return duplicate ? t("A group with this name already exists.") : undefined;
 }
 
 /** 把输入框中的逗号分隔文本转换为规范化标签，空值表示清空标签。 */
@@ -537,6 +551,18 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 /** 判断值是否为非空字符串。 */
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
+}
+
+/** 将状态机值转换为当前语言的树视图状态文案。 */
+function translateFreshness(value: DemoState['freshness']): string {
+  switch (value) {
+    case 'Ready': return t('Ready');
+    case 'Stale': return t('Stale');
+    case 'Error': return t('Error');
+    case 'Loading':
+    case undefined:
+    default: return t('Loading');
+  }
 }
 
 /** 把未知异常转换为用户可读的错误文本。 */

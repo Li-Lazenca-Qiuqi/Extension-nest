@@ -6,3 +6,4 @@ export class ThemeColor{constructor(public id:string){}}
 export class ThemeIcon{constructor(public id:string,public color?:ThemeColor){}}
 export class TreeItem{constructor(public label:string,public collapsibleState:number){} }
 export const TreeItemCollapsibleState={None:0,Collapsed:1,Expanded:2};
+export const env={language:'en'};

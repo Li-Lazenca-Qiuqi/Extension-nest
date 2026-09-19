@@ -46,7 +46,7 @@ it('预览后变成真实发现时拒绝整批清理', async () => {
   const { repo, values } = setup();
   await repo.refresh(() => [], true);
   await repo.refresh(() => [{ ...live, id: 'old.demo' }], true);
-  await expect(repo.cleanupUnverified(['old.demo'])).rejects.toThrow('变化');
+  await expect(repo.cleanupUnverified(['old.demo'])).rejects.toThrow('changed');
   expect(values.has('extensionNest.cleanupBackups')).toBe(false);
 });
 

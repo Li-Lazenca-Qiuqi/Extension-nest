@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { t } from './i18n';
 
 /** 仅检查命令是否注册，不执行管理动作；存在不代表参数、目标或结果已验证。 */
 export const PROBE_COMMANDS = [
@@ -28,21 +29,21 @@ export async function collectCapabilityProbe() {
       remoteName: vscode.env.remoteName ?? null,
       // remoteName 描述窗口连接，不能单独证明本扩展运行于本地宿主。
       processPlatform: process.platform,
-      profile: 'Unverified',
-      localTarget: 'Unverified',
+      profile: t('Unverified'),
+      localTarget: t('Unverified'),
     },
     inventory: {
       source: 'vscode.extensions.all',
-      completeness: 'Unverified',
+      completeness: t('Unverified'),
       count: extensions.length,
       extensions,
     },
     commands: PROBE_COMMANDS.map(id => ({ id, registered: commands.has(id), executed: false })),
     limitations: [
-      'API 可见清单未与原生安装清单逐 ID 对照，不能作为完整本地清单。',
-      'isActive 仅表示已激活；启用范围、限制原因、待重启与更新结果均未验证。',
-      '命令注册检查不证明管理操作成功；本诊断不执行启停、更新或安装。',
-      '未采集用户路径、工作区内容、完整 manifest 或私有数据库。',
+      t('The visible API inventory was not compared with the native installation inventory by ID, so it is not a complete local inventory.'),
+      t('isActive only indicates activation; enabled scope, restriction reasons, restart requirements, and update results were not verified.'),
+      t('Checking command registration does not prove management success; this diagnostic does not start, stop, update, or install extensions.'),
+      t('User paths, workspace contents, complete manifests, and private databases were not collected.'),
     ],
   };
 }
