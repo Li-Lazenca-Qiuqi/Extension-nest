@@ -9,6 +9,11 @@ type MessageParams = Record<string, string | number>;
  * 语言选择在 t 调用时读取，避免模块初始化时锁定语言。
  */
 const messages = {
+  'empty.historyOnly': { en: 'No extensions are currently visible. Retained records are available.', zh: '当前没有可见扩展，仍有保留的历史记录。' },
+  'empty.viewHistory': { en: 'View retained records', zh: '查看历史记录' },
+  'empty.retry': { en: 'Retry discovery', zh: '重新扫描' },
+  'scan.never': { en: 'No successful scan yet', zh: '尚无成功扫描' },
+  'scan.lastSuccess': { en: 'Last successful scan:', zh: '最近成功扫描：' },
   'extension.filterByCategory': { en: 'Automatic category: {tag} · Click to filter', zh: '自动类别：{tag} · 点击筛选' },
   'tags.automaticHint': { en: 'Edit manual tags here. Automatic category tags follow the extension and are kept separately.', zh: '此处仅编辑手动标签。自动类别标签随扩展更新，单独保留。' },
   'app.title': { en: 'Extensions', zh: '扩展' },

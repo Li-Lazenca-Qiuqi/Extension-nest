@@ -77,6 +77,7 @@ button:disabled{opacity:.4;cursor:default}
 .card-bottom .tag-chip-category{border-style:dashed;background:color-mix(in srgb,var(--muted) 8%,transparent)}
 
 .discovery-empty{padding:18px 0;color:var(--muted);font-size:12px}.history-notice{padding:8px 0;font-size:11px}
+.discovery-empty{display:flex;align-items:center;flex-wrap:wrap;gap:10px}.discovery-empty button{font-size:12px}.discovery-summary{flex-wrap:wrap;gap:6px 14px}.last-scan{color:var(--muted)}footer{flex-wrap:wrap;gap:8px}footer>div{flex-wrap:wrap}
 
 .header-actions .cleanup-unverified{white-space:nowrap;border-color:var(--vscode-button-secondaryBorder,var(--line));background:var(--vscode-button-secondaryBackground,#30343b)}
 

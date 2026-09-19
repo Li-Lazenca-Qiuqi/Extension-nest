@@ -36,10 +36,11 @@ export class DiscoveryRepository {
         throw error;
       }
       // 只读窗口本轮内的历史仍保留，但不能写回或冒充跨重启已保存。
-      const cache = writable ? storedCache : { schemaVersion: 1 as const, records: { ...this.cache.records, ...storedCache.records } };
+      const cache = writable ? storedCache : { ...storedCache, records: { ...this.cache.records, ...storedCache.records },
+        lastSuccessfulAt: this.cache.lastSuccessfulAt ?? storedCache.lastSuccessfulAt };
       if (!this.loaded) {
         this.organization = organization; this.cache = cache; this.loaded = true;
-        this.state = { ...project(organization, cache), freshness: 'Loading', readOnly: !writable };
+        this.state = { ...project(organization, cache), freshness: 'Loading', lastSuccessfulAt: cache.lastSuccessfulAt, readOnly: !writable };
       }
       const values = validateObservations(read());
       const now = new Date().toISOString();

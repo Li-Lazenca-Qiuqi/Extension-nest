@@ -16,6 +16,22 @@ function storage() {
 }
 
 describe('公开发现与组织存储', () => {
+  it('成功空扫描也保存时间，重启失败及写入失败不推进时间',async()=>{
+    const db=storage(), repo=new DiscoveryRepository(db);
+    await repo.refresh(()=>[],true);
+    const timestamp=repo.state.lastSuccessfulAt;
+    expect(timestamp).toBeTruthy();
+    expect(parseDiscoveryCache(db.values.get(DISCOVERY_KEY)).lastSuccessfulAt).toBe(timestamp);
+    const restarted=new DiscoveryRepository(db);
+    await restarted.refresh(()=>{throw new Error('offline')},true);
+    expect(restarted.state).toMatchObject({freshness:'Stale',lastSuccessfulAt:timestamp,extensions:[]});
+    db.update=async()=>{throw new Error('disk')};
+    await restarted.refresh(()=>[item],true);
+    expect(restarted.state.lastSuccessfulAt).toBe(timestamp);
+    expect(parseDiscoveryCache(db.values.get(DISCOVERY_KEY)).lastSuccessfulAt).toBe(timestamp);
+    expect(()=>parseDiscoveryCache({...emptyCache(),lastSuccessfulAt:'invalid'})).toThrow();
+    expect(parseDiscoveryCache(emptyCache()).lastSuccessfulAt).toBeUndefined();
+  });
   it('自动类别与手动标签独立保存，更新、消失和重现不丢手动标签', async () => {
     const db = storage(), repo = new DiscoveryRepository(db);
     await repo.refresh(() => [{ ...item, categories: ['Themes', 'Other'] }], true);
@@ -128,7 +144,7 @@ describe('公开发现与组织存储', () => {
     const repo = new DiscoveryRepository(db);
     await repo.refresh(() => [], true);
     expect(repo.state.extensions[0]).toMatchObject({ visibility: 'Unverified', version: '—', tags: ['Old'] });
-    expect(db.values.get(DISCOVERY_KEY)).toEqual(emptyCache());
+    expect(db.values.get(DISCOVERY_KEY)).toEqual({ ...emptyCache(), lastSuccessfulAt: repo.state.lastSuccessfulAt });
   });
   it('部分失败和读取异常不覆盖成功快照或时间', async () => {
     const db = storage(), repo = new DiscoveryRepository(db);

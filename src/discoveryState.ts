@@ -23,7 +23,7 @@ export interface DiscoveryRecord {
   lastSeenAt: string;
   lastSeenMetadata: Observation;
 }
-export interface DiscoveryCache { schemaVersion: 1; records: Record<string, DiscoveryRecord> }
+export interface DiscoveryCache { schemaVersion: 1; records: Record<string, DiscoveryRecord>; lastSuccessfulAt?: string }
 export const emptyOrganization = (): OrganizationState => ({ schemaVersion: 1, groups: [], assignments: {}, tags: {}, extensionOrder: [] });
 export const emptyCache = (): DiscoveryCache => ({ schemaVersion: 1, records: {} });
 const isTimestamp = (value: unknown): value is string => typeof value === 'string'
@@ -51,6 +51,7 @@ export function parseDiscoveryCache(value: unknown): DiscoveryCache {
   const input = value as DiscoveryCache;
   if (!input || input.schemaVersion !== 1 || !input.records || typeof input.records !== 'object' || Array.isArray(input.records)) throw new Error(t('Discovery cache format is invalid.'));
   const records: DiscoveryCache['records'] = {};
+  if (input.lastSuccessfulAt !== undefined && !isTimestamp(input.lastSuccessfulAt)) throw new Error(t('Discovery cache time or source is invalid.'));
   for (const [id, record] of Object.entries(input.records)) {
     if (!record || record.source !== 'public-local-host' || !isTimestamp(record.firstSeenAt) || !isTimestamp(record.lastSeenAt)
       || Date.parse(record.firstSeenAt) > Date.parse(record.lastSeenAt)) throw new Error(t('Discovery cache time or source is invalid.'));
@@ -58,7 +59,7 @@ export function parseDiscoveryCache(value: unknown): DiscoveryCache {
     if (id !== metadata.id) throw new Error(t('Discovery cache ID does not match its metadata.'));
     records[id] = { source: 'public-local-host', firstSeenAt: record.firstSeenAt, lastSeenAt: record.lastSeenAt, lastSeenMetadata: metadata };
   }
-  return { schemaVersion: 1, records };
+  return { schemaVersion: 1, records, ...(input.lastSuccessfulAt ? { lastSuccessfulAt: input.lastSuccessfulAt } : {}) };
 }
 
 /** 只有真实成功读取才能推进历史时间；函数不修改传入缓存。 */
@@ -70,7 +71,7 @@ export function observe(cache: DiscoveryCache, values: readonly Observation[], n
     const lastSeenAt = old && Date.parse(old.lastSeenAt) > Date.parse(now) ? old.lastSeenAt : now;
     records[metadata.id] = { source: 'public-local-host', firstSeenAt: old?.firstSeenAt ?? now, lastSeenAt, lastSeenMetadata: metadata };
   }
-  return { schemaVersion: 1, records };
+  return { schemaVersion: 1, records, lastSuccessfulAt: now };
 }
 
 /** 缺少本轮成功快照时只给 Unverified；不能从历史或组织数据推断启停。 */
