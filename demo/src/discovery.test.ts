@@ -13,6 +13,33 @@ function storage() {
 }
 
 describe('公开发现与组织存储', () => {
+  it('未保存项按名称与同名 ID 排序，不依赖扫描顺序或修改输入', () => {
+    const values = [{ ...item, id: 'test.z', name: 'Alpha' }, { ...item, id: 'test.b', name: 'Beta' }, { ...item, id: 'test.a', name: 'Alpha' }];
+    const organization = emptyOrganization();
+    const cache = observe(emptyCache(), values, '2026-09-19T00:00:00.000Z');
+    const before = structuredClone(cache);
+    expect(projectDiscovery(organization, cache).extensions.map(e => e.id)).toEqual(['test.a', 'test.z', 'test.b']);
+    const reversed = observe(emptyCache(), [...values].reverse(), '2026-09-19T00:00:00.000Z');
+    expect(projectDiscovery(organization, reversed).extensions).toEqual(projectDiscovery(organization, cache).extensions);
+    expect(cache).toEqual(before);
+    expect(organization.extensionOrder).toEqual([]);
+  });
+  it('刷新与重启保留手动顺序，新增项仅在其后按名称排序', async () => {
+    const db = storage(), repo = new DiscoveryRepository(db);
+    const a = { ...item, id: 'test.a', name: 'Alpha' }, z = { ...item, id: 'test.z', name: 'Zulu' };
+    await repo.refresh(() => [z, a], true);
+    expect(repo.state.extensions.map(e => e.id)).toEqual([a.id, z.id]);
+    await repo.save(reducer(repo.state, { type: 'shiftExtension', id: z.id, direction: -1 }));
+    const saved = structuredClone(db.values.get(ORGANIZATION_KEY));
+    const b = { ...item, id: 'test.b', name: 'Beta' }, c = { ...item, id: 'test.c', name: 'Charlie' };
+    const restarted = new DiscoveryRepository(db);
+    await restarted.refresh(() => [c, b, a], true);
+    expect(restarted.state.extensions.map(e => e.id)).toEqual([z.id, a.id, b.id, c.id]);
+    expect(restarted.state.extensions[0].visibility).toBe('NotVisible');
+    await restarted.refresh(() => [b, z, c, a], true);
+    expect(restarted.state.extensions.map(e => e.id)).toEqual([z.id, a.id, b.id, c.id]);
+    expect(db.values.get(ORGANIZATION_KEY)).toEqual(saved);
+  });
   it('内置过滤同步统计且不删除隐藏项的组织数据，显示开关可恢复历史项', async () => {
     const db = storage(), repo = new DiscoveryRepository(db);
     const builtin = { ...item, id: 'vscode.git' };
@@ -21,11 +48,12 @@ describe('公开发现与组织存储', () => {
     await repo.save(reducer(repo.state, { type: 'createGroup', name: 'Keep' }));
     await repo.save(reducer(repo.state, { type: 'move', ids: [builtin.id], groupId: 'group-keep' }));
     await repo.save(reducer(repo.state, { type: 'setTags', ids: [builtin.id], tags: ['Internal'] }));
+    const savedOrder = repo.state.extensions.map(e => e.id);
     await repo.refresh(() => [user], true, () => true, new Set([builtin.id]));
     expect(repo.state.extensions.map(e => e.id)).toEqual([user.id]);
     await repo.save(reducer(repo.state, { type: 'setTags', ids: [user.id], tags: ['User'] }));
     await repo.refresh(() => [user], true);
-    expect(repo.state.extensions.map(e => e.id)).toEqual([builtin.id, user.id]);
+    expect(repo.state.extensions.map(e => e.id)).toEqual(savedOrder);
     expect(repo.state.extensions.find(e => e.id === builtin.id)).toMatchObject({ visibility: 'NotVisible', groupId: 'group-keep', tags: ['Internal'] });
     expect(repo.state.extensions.find(e => e.id === user.id)?.tags).toEqual(['User']);
   });
