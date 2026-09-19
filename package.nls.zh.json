@@ -1,4 +1,5 @@
 {
+  "command.repairData": "修复损坏数据",
   "description": "使用分组、标签与原生 Dashboard 整理本地 VS Code 宿主可见的扩展。",
   "color.purple": "Extension Nest 紫色分组图标",
   "color.blue": "Extension Nest 蓝色分组图标",

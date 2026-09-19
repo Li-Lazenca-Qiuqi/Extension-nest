@@ -9,6 +9,19 @@ import type AppType from './App';
 let App:typeof AppType;
 let cleanup=()=>{};
 const postMessage=vi.fn();
+it.each(['en','zh-cn'])('损坏提示与受限修复消息 %s',language=>{
+ setUiLanguage(language);
+ const node=document.createElement('div');document.body.append(node);const root=createRoot(node);
+ act(()=>root.render(createElement(App)));cleanup=()=>act(()=>root.unmount());
+ const state={schemaVersion:1,groups:[],extensions:[],freshness:'Error',readOnly:true,damagedData:['organization','discovery'],canRepair:true};
+ act(()=>window.dispatchEvent(new MessageEvent('message',{data:{type:'state',state}})));
+ const button=[...node.querySelectorAll<HTMLButtonElement>('.discovery-empty button')].find(b=>b.textContent===(language==='en'?'Repair data…':'修复数据…'))!;
+ expect(node.querySelector('.discovery-empty')?.textContent).toContain(language==='en'?'Organization data / Discovery cache':'组织配置 / 发现缓存');
+ act(()=>button.click());
+ expect(postMessage).toHaveBeenCalledWith({type:'repairData'});
+ act(()=>window.dispatchEvent(new MessageEvent('message',{data:{type:'state',state:{...state,canRepair:false}}})));
+ expect(button.disabled).toBe(true);
+});
 it.each(['en','zh-cn'])('空状态入口与失败时间保持 %s',language=>{
  setUiLanguage(language);
  const node=document.createElement('div');document.body.append(node);const root=createRoot(node);

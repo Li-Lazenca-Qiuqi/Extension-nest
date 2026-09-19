@@ -29,6 +29,7 @@ export function useDemoStore(){
   host.postMessage({type:'cleanupUnverified'});
  }
  function refresh(){if(host)host.postMessage({type:'refresh'})}
+ function repairData(){if(host&&state.canRepair)host.postMessage({type:'repairData'})}
  function openExtensions(){if(host)host.postMessage({type:'openExtensions'})}
- return {cleanupUnverified,refresh,openExtensions,state,ready,saved,hostError,nativeFilter,dispatch,openExtension,icons,isNative:Boolean(host)};
+ return {repairData,cleanupUnverified,refresh,openExtensions,state,ready,saved,hostError,nativeFilter,dispatch,openExtension,icons,isNative:Boolean(host)};
 }

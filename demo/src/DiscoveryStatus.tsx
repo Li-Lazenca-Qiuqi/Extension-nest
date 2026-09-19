@@ -11,6 +11,7 @@ interface Props {
   onClear: () => void;
   onHistory: () => void;
   onRefresh: () => void;
+  onRepair: () => void;
 }
 
 /** 读取失败优先于筛选结果；显式选中的空组继续保留拖放入口。 */
@@ -19,6 +20,8 @@ export function DiscoveryStatus(p: Props) {
   if (!p.ready || freshness === 'Loading') return <div className="discovery-empty" role="status">{t('empty.discovering')}</div>;
   if (freshness === 'Error' || freshness === 'Stale') return <div className="discovery-empty" role="status">
     <span>{t(freshness === 'Error' ? 'empty.discoveryFailed' : 'empty.discoveryStale')}</span>
+    {!!p.state.damagedData?.length && <span>{t('repair.detected', { targets: p.state.damagedData.map(target => t(target === 'organization' ? 'repair.organization' : 'repair.discovery')).join(' / ') })}</span>}
+    {p.native && !!p.state.damagedData?.length && <button disabled={!p.state.canRepair} onClick={p.onRepair}>{t('repair.button')}</button>}
     {p.native && <button onClick={p.onRefresh}>{t('empty.retry')}</button>}
   </div>;
   if (!p.empty || p.hasGroupSections) return null;

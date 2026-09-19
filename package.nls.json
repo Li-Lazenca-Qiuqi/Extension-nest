@@ -1,4 +1,5 @@
 {
+  "command.repairData": "Repair damaged data",
   "description": "Organize extensions visible to the local VS Code host with groups, tags, and a native Dashboard.",
   "color.purple": "Extension Nest purple group icon",
   "color.blue": "Extension Nest blue group icon",

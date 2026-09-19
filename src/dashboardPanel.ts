@@ -8,6 +8,7 @@ import { escapeHtml, t } from "./i18n";
 export interface DashboardHostCallbacks {
   getState(): DemoState;
   onRefresh(): Promise<void>;
+  onRepairData?(): Promise<void>;
   onCleanupUnverified(): Promise<void>;
   onOpenExtensions(): Promise<void>;
   onAction(action: unknown): Promise<void>;
@@ -128,6 +129,9 @@ export class DashboardPanel {
         return;
       case "refresh":
         await this.callbacks.onRefresh();
+        return;
+      case "repairData":
+        await this.callbacks.onRepairData?.();
         return;
       case "openExtensions":
         await this.callbacks.onOpenExtensions();

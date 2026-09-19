@@ -31,6 +31,8 @@ export interface DemoState {
   lastSuccessfulAt?: string;
   error?: string;
   readOnly?: boolean;
+  damagedData?: Array<'organization' | 'discovery'>;
+  canRepair?: boolean;
 }
 
 /** 演示状态支持的全部操作。 */

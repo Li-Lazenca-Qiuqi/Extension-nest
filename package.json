@@ -109,6 +109,11 @@
     },
     "commands": [
       {
+        "command": "extensionNest.repairData",
+        "title": "%command.repairData%",
+        "category": "Extension Nest"
+      },
+      {
         "command": "extensionNest.inspectCapabilities",
         "title": "%command.inspectCapabilities%",
         "category": "Extension Nest"

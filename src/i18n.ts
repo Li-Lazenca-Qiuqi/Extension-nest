@@ -2,6 +2,16 @@ import * as vscode from "vscode";
 
 /** 宿主侧文案；扩展名、ID、标签和外部错误等动态内容由调用方原样传入。 */
 export const HOST_MESSAGES = {
+  'Repair requires the writable window.': { en: 'Repair requires the writable window.', zh: '请在具有写入权限的窗口中修复。' },
+  'Damaged data changed. Inspect it again before resetting.': { en: 'Damaged data changed. Inspect it again before resetting.', zh: '待修复数据已变化，请重新检查后确认。' },
+  'No damaged data found.': { en: 'No damaged data found.', zh: '没有检测到损坏的数据。' },
+  'Choose damaged data to reset': { en: 'Choose damaged data to reset', zh: '选择要重置的损坏数据' },
+  'Organization data': { en: 'Organization data', zh: '组织配置' },
+  'Discovery cache': { en: 'Discovery cache', zh: '发现缓存' },
+  'Reset damaged {target}?': { en: 'Reset damaged {target}?', zh: '重置损坏的{target}？' },
+  'Groups, assignments, manual tags and order will be lost. Discovery history will be kept. No backup is created. Extensions are not changed.': { en: 'Groups, assignments, manual tags and order will be lost. Discovery history will be kept. No backup is created. Extensions are not changed.', zh: '将删除分组、归属、手动标签和排序，保留发现历史。不创建备份，不改动插件本身。' },
+  'Discovery history, automatic categories and scan times will be cleared. Organization data will be kept. Visible extensions can be scanned again. No backup is created.': { en: 'Discovery history, automatic categories and scan times will be cleared. Organization data will be kept. Visible extensions can be scanned again. No backup is created.', zh: '将清除发现历史、自动类别和扫描时间，保留组织配置。当前可见插件可重新扫描。不创建备份。' },
+  'Reset permanently': { en: 'Reset permanently', zh: '永久重置' },
   "Edit manual tags for {target}; automatic categories are kept separately.": {
     en: "Edit manual tags for {target}; automatic categories are kept separately.",
     zh: "编辑 {target} 的手动标签；自动类别单独保留。",

@@ -240,6 +240,9 @@ export function validateState(value: unknown): value is DemoState {
   if (!isRecord(value) || value.schemaVersion !== 1 || !Array.isArray(value.groups) || !Array.isArray(value.extensions)) {
     return false;
   }
+  if (value.damagedData !== undefined && (!Array.isArray(value.damagedData)
+    || !value.damagedData.every(target => target === 'organization' || target === 'discovery'))) return false;
+  if (value.canRepair !== undefined && typeof value.canRepair !== 'boolean') return false;
 
   const groups = value.groups;
   const groupIds = new Set<string>();

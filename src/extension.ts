@@ -71,6 +71,7 @@ class ExtensionNestHost implements vscode.Disposable {
         if (await openNativeExtension(id, this.state) === 'Failed') throw new Error(t("Native extension page navigation failed."));
       },
       onRefresh: () => this.refresh(),
+      onRepairData: () => this.repairDamagedData(),
       onCleanupUnverified: () => this.cleanupUnverified(),
       onOpenExtensions: async () => { await vscode.commands.executeCommand("workbench.view.extensions"); },
     };
@@ -112,6 +113,7 @@ class ExtensionNestHost implements vscode.Disposable {
     register("extensionNest.openDashboard", (value?: unknown) => this.openDashboard(value));
     register("extensionNest.inspectCapabilities", () => showCapabilityProbe());
     register("extensionNest.refresh", () => this.refresh());
+    register("extensionNest.repairData", () => this.repairDamagedData());
     register("extensionNest.cleanupUnverified", () => this.cleanupUnverified());
     register("extensionNest.openExtension", async (value?: unknown) => {
       const id = getExtensionId(value, this.state);
@@ -140,6 +142,30 @@ class ExtensionNestHost implements vscode.Disposable {
 
   private async shiftGroup(value:unknown,direction:-1|1):Promise<void>{
     const id=getGroupId(value);if(id)await this.dispatchAction({type:'shiftGroup',id,direction});
+  }
+
+  private async repairDamagedData(): Promise<void> {
+    if (this.disposed) return;
+    if (!this.lease.owned) { this.reportError(t('Repair requires the writable window.')); return; }
+    const candidates = this.repository.repairCandidates();
+    if (!candidates.length) { void vscode.window.showInformationMessage(t('No damaged data found.')); return; }
+    const choices = candidates.map(candidate => ({ label: t(candidate.target === 'organization' ? 'Organization data' : 'Discovery cache'), candidate }));
+    const selected = choices.length === 1 ? choices[0] : await vscode.window.showQuickPick(choices, { placeHolder: t('Choose damaged data to reset') });
+    if (!selected || this.disposed) return;
+    const confirmed = await vscode.window.showWarningMessage(t('Reset damaged {target}?', { target: selected.label }), {
+      modal: true, detail: t(selected.candidate.target === 'organization'
+        ? 'Groups, assignments, manual tags and order will be lost. Discovery history will be kept. No backup is created. Extensions are not changed.'
+        : 'Discovery history, automatic categories and scan times will be cleared. Organization data will be kept. Visible extensions can be scanned again. No backup is created.'),
+    }, t('Reset permanently'));
+    if (confirmed !== t('Reset permanently') || this.disposed) return;
+    try {
+      await this.enqueue(async () => {
+        if (await this.repository.resetDamaged(selected.candidate, this.lease.owned, () => !this.disposed)) {
+          this.state = this.repository.state; this.notifyStateChanged();
+        }
+      });
+      await this.refresh();
+    } catch (error) { this.reportError(getErrorMessage(error)); }
   }
 
   /** 原生多选列表预览精确 ID 与受影响元数据，确认前不写入或删除。 */

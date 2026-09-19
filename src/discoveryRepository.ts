@@ -6,6 +6,8 @@ import { t } from './i18n';
 export interface StateStorage { get<T>(key: string): T | undefined; update(key: string, value: unknown): Thenable<void> | Promise<void> }
 export const ORGANIZATION_KEY = 'extensionNest.state';
 export const DISCOVERY_KEY = 'extensionNest.discovery';
+export type RepairTarget = 'organization' | 'discovery';
+export interface RepairCandidate { target: RepairTarget; fingerprint: string }
 
 /** 由宿主队列和进程级单写者保护；先持久化再发布，失败保留上次有效快照。 */
 export class DiscoveryRepository {
@@ -16,6 +18,41 @@ export class DiscoveryRepository {
   private loaded = false;
   private hiddenIds: ReadonlySet<string> = new Set();
   constructor(private readonly storage: StateStorage) {}
+
+  /** 分别检查两份数据，缺失不视为损坏；指纹仅供宿主确认后复查，不传给 Webview。 */
+  repairCandidates(): RepairCandidate[] {
+    const candidates: RepairCandidate[] = [];
+    for (const target of ['organization', 'discovery'] as const) {
+      const value = this.repairValue(target);
+      try {
+        if (target === 'discovery') parseDiscoveryCache(value.current);
+        else if (value.current !== undefined) parseOrganizationState(value.current);
+        else if (value.legacy !== undefined) migrateDemoOrganization(value.legacy);
+      } catch { candidates.push({ target, fingerprint: JSON.stringify(value) }); }
+    }
+    return candidates;
+  }
+
+  private repairValue(target: RepairTarget) {
+    const current = this.storage.get<unknown>(target === 'organization' ? ORGANIZATION_KEY : DISCOVERY_KEY);
+    return { current, legacy: target === 'organization' && current === undefined
+      ? this.storage.get<unknown>('extensionNest.demo.state') : undefined };
+  }
+
+  /** 每次只重置一个确认过且未变化的损坏键；不能重置有效数据或依赖界面授权。 */
+  async resetDamaged(candidate: RepairCandidate, writable: boolean, current: () => boolean = () => true): Promise<boolean> {
+    if (!current()) return false;
+    if (!writable) throw new Error(t('Repair requires the writable window.'));
+    const latest = this.repairCandidates().find(value => value.target === candidate.target);
+    if (!latest || latest.fingerprint !== candidate.fingerprint) throw new Error(t('Damaged data changed. Inspect it again before resetting.'));
+    await this.storage.update(candidate.target === 'organization' ? ORGANIZATION_KEY : DISCOVERY_KEY,
+      candidate.target === 'organization' ? emptyOrganization() : emptyCache());
+    if (!current()) return false;
+    // 防止刷新失败时继续展示刚刚删除的数据，重新从保留的存储读取。
+    this.organization = emptyOrganization(); this.cache = emptyCache(); this.visible = undefined; this.loaded = false;
+    this.state = { schemaVersion: 1, groups: [], extensions: [], freshness: 'Loading', readOnly: true };
+    return true;
+  }
 
   async refresh(read: () => readonly Observation[], writable: boolean, current: () => boolean = () => true,
     hiddenIds: ReadonlySet<string> = new Set()): Promise<void> {
@@ -60,7 +97,11 @@ export class DiscoveryRepository {
       this.state = { ...projection, extensions: projection.extensions.filter(extension => !hiddenIds.has(extension.id)),
         freshness: 'Ready', lastSuccessfulAt: now, readOnly: !writable };
     } catch (error) {
-      if (current()) this.fail(error, true);
+      if (current()) {
+        this.fail(error, true);
+        const damagedData = this.repairCandidates().map(value => value.target);
+        this.state = { ...this.state, damagedData, canRepair: writable && damagedData.length > 0 };
+      }
     }
   }
 
