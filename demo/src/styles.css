@@ -20,7 +20,7 @@ body.vscode-light{color-scheme:light}
 
 /* 标题命中区仅包住文字，发布者和余下空白保留卡片选择与拖动。 */
 .card-heading .extension-icon{flex:0 0 30px;width:30px;min-height:30px}.extension-identity{flex:1;min-width:0}.card-heading .extension-title{display:block;width:fit-content;max-width:100%;min-height:0;line-height:1.4}.extension-identity>small{display:block;color:var(--muted);font-size:11px;line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.card-bottom{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:7px}.card-bottom .card-tags{margin:0;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;min-width:0;gap:4px}.card-bottom .tag-chip{flex-shrink:0;gap:3px}.card-bottom .version-actions{grid-column:3}
+.card-bottom{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:7px;align-items:start}.card-bottom .card-tags{margin:0;flex-wrap:wrap;min-width:0;gap:4px}.card-bottom .tag-chip{gap:3px}.card-bottom .version-actions{grid-column:3}
 
 .extension-logo{display:block;width:30px;height:30px;object-fit:contain;flex:0 0 30px}
 
@@ -73,7 +73,8 @@ button:disabled{opacity:.4;cursor:default}
 
 .visibility-status{font-size:11px;color:var(--muted);white-space:nowrap;border:1px solid var(--line);border-radius:3px;padding:2px 6px}.is-not-visible .visibility-status{border-style:dashed}.version-actions{min-width:0}.version{overflow:hidden;text-overflow:ellipsis}
 
-.card-bottom .tag-chip{white-space:nowrap;max-width:none}.is-historical .version-actions{grid-column:1 / -1;justify-content:flex-start;margin-left:0}.is-historical .card-tags{grid-column:2 / -1}
+.card-bottom .tag-chip{white-space:normal;max-width:100%;min-width:0;text-align:left}.is-historical .version-actions{grid-column:1 / -1;justify-content:flex-start;margin-left:0}.is-historical .card-tags{grid-column:2 / -1}
+.card-bottom .tag-chip-category{border-style:dashed;background:color-mix(in srgb,var(--muted) 8%,transparent)}
 
 .discovery-empty{padding:18px 0;color:var(--muted);font-size:12px}.history-notice{padding:8px 0;font-size:11px}
 

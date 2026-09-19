@@ -1,4 +1,15 @@
 import { t } from './uiI18n';
+import type { Extension } from './models';
+
+/** 合并展示与筛选用标签；自动类别优先，同名手动标签仍独立保存。 */
+export function displayTags(extension: Pick<Extension, 'tags' | 'categories'>): string[] {
+  const tags = new Map<string, string>();
+  for (const tag of [...(extension.categories ?? []), ...extension.tags]) {
+    const key = tag.toLocaleLowerCase();
+    if (!tags.has(key)) tags.set(key, tag);
+  }
+  return [...tags.values()];
+}
 
 const MAX_TAG_LENGTH = 30;
 const MAX_TAG_COUNT = 10;

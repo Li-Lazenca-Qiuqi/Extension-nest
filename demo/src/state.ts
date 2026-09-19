@@ -35,7 +35,8 @@ function cloneState(state: DemoState): DemoState {
     ...state,
     schemaVersion: 1,
     groups: state.groups.map((group) => ({ ...group })),
-    extensions: state.extensions.map((extension) => ({ ...extension, tags: [...extension.tags] })),
+    extensions: state.extensions.map((extension) => ({ ...extension, tags: [...extension.tags],
+      ...(extension.categories ? { categories: [...extension.categories] } : {}) })),
   };
 }
 
@@ -203,6 +204,10 @@ function validateExtension(value: unknown, groupIds: Set<string>): value is Exte
   const groupId = value.groupId;
   const validGroupId = groupId === null || (isNonEmptyString(groupId) && groupIds.has(groupId));
   const rawTags = value.tags;
+  if (value.categories !== undefined && (!Array.isArray(value.categories)
+    || !value.categories.every(category => typeof category === 'string' && category === category.trim()
+      && category.length > 0 && Array.from(category).length <= 30)
+    || new Set(value.categories.map(category => category.toLocaleLowerCase())).size !== value.categories.length)) return false;
   if (!Array.isArray(rawTags) || !rawTags.every((tag) => typeof tag === "string")) {
     return false;
   }

@@ -2,7 +2,21 @@ import type { DemoState, Extension } from '../demo/src/models';
 import type { OrganizationState } from './organizationState';
 import { t } from './i18n';
 
-export type Observation = Pick<Extension, 'id' | 'name' | 'publisher' | 'description' | 'version'>;
+export type Observation = Pick<Extension, 'id' | 'name' | 'publisher' | 'description' | 'version'> & { categories?: string[] };
+
+/** 类别来自外部 manifest；忽略无效值，不使可选字段中断整批发现。 */
+export function readCategories(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  const categories = new Map<string, string>();
+  for (const entry of value) {
+    if (typeof entry !== 'string') continue;
+    const name = entry.trim();
+    if (!name || Array.from(name).length > 30) continue;
+    const key = name.toLowerCase();
+    if (!categories.has(key)) categories.set(key, name);
+  }
+  return [...categories.values()];
+}
 export interface DiscoveryRecord {
   source: 'public-local-host';
   firstSeenAt: string;
@@ -21,12 +35,13 @@ export function validateObservations(values: readonly Observation[]): Observatio
   const ids = new Set<string>();
   return values.map(value => {
     if (!value || typeof value.id !== 'string' || !/^[a-z0-9][a-z0-9-]*\.[a-z0-9][a-z0-9-]*$/i.test(value.id)
-      || !['name', 'publisher', 'version'].every(key => typeof value[key as keyof Observation] === 'string' && value[key as keyof Observation].trim())
+      || !(['name', 'publisher', 'version'] as const).every(key => typeof value[key] === 'string' && value[key].trim())
       || typeof value.description !== 'string') throw new Error(t('Discovery snapshot contains invalid metadata.'));
     const id = value.id.toLowerCase();
     if (ids.has(id)) throw new Error(t('Discovery snapshot contains duplicate IDs.'));
     ids.add(id);
-    return { id, name: value.name, publisher: value.publisher, description: value.description, version: value.version };
+    return { id, name: value.name, publisher: value.publisher, description: value.description, version: value.version,
+      categories: readCategories(value.categories) };
   });
 }
 

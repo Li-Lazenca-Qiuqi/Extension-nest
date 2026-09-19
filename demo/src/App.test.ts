@@ -9,8 +9,27 @@ import type AppType from './App';
 let App:typeof AppType;
 let cleanup=()=>{};
 const postMessage=vi.fn();
+beforeAll(()=>{HTMLDialogElement.prototype.showModal=function(){this.open=true};HTMLDialogElement.prototype.close=function(){this.open=false}});
 beforeAll(async()=>{window.acquireVsCodeApi=()=>({postMessage});App=(await import('./App')).default});
 afterEach(()=>{cleanup();document.body.innerHTML='';postMessage.mockClear();setUiLanguage(undefined)});
+it.each(['en','zh-cn'])('自动类别可筛选且编辑仅提交手动标签 %s', language=>{
+ setUiLanguage(language);
+ const node=document.createElement('div');document.body.append(node);const root=createRoot(node);
+ act(()=>root.render(createElement(App)));cleanup=()=>act(()=>root.unmount());
+ const extensions=seedState.extensions.slice(0,2).map((extension,index)=>({...extension,tags:['Work'],categories:index===0?['Testing']:[]}));
+ act(()=>window.dispatchEvent(new MessageEvent('message',{data:{type:'state',state:{...seedState,extensions,freshness:'Ready'}}})));
+ const category=[...node.querySelectorAll<HTMLButtonElement>('.card-tags button')].find(button=>button.textContent==='Testing')!;
+ expect(category.title).toContain(language==='en'?'Automatic category':'自动类别');
+ act(()=>category.click());
+ expect(node.querySelectorAll('article')).toHaveLength(1);
+ expect(node.querySelector('.tag-filter-options')?.textContent).not.toBeNull();
+ expect(node.querySelectorAll('.card-tags button')).toHaveLength(2);
+ act(()=>node.querySelector<HTMLElement>('article')!.click());
+ act(()=>[...node.querySelectorAll<HTMLButtonElement>('.selection-bar button')].find(button=>button.textContent===(language==='en'?'Edit tags':'编辑标签'))!.click());
+ expect(node.querySelector('.tag-editor .tag-chips')?.textContent).toBe('Work');
+ act(()=>node.querySelector<HTMLButtonElement>('.tag-editor .modal-actions .primary')!.click());
+ expect(postMessage).toHaveBeenCalledWith({type:'action',action:{type:'setTags',ids:[extensions[0].id],tags:['Work']}});
+});
 it('keeps visibility independent from Ungrouped and places cleanup last',()=>{
  const node=document.createElement('div');document.body.append(node);const root=createRoot(node);
  act(()=>root.render(createElement(App)));cleanup=()=>act(()=>root.unmount());

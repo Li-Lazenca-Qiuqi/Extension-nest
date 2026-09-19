@@ -3,6 +3,9 @@ import { DiscoveryRepository, DISCOVERY_KEY, ORGANIZATION_KEY } from '../../src/
 import { emptyCache, emptyOrganization, observe, parseDiscoveryCache, projectDiscovery, type Observation } from '../../src/discoveryState';
 import { WriterLease } from '../../src/writerLease';
 import { reducer } from './state';
+import { validateState } from './state';
+import { displayTags } from './tags';
+import { filterExtensions, availableTags } from './filterExtensions';
 import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
 
@@ -13,6 +16,48 @@ function storage() {
 }
 
 describe('公开发现与组织存储', () => {
+  it('自动类别与手动标签独立保存，更新、消失和重现不丢手动标签', async () => {
+    const db = storage(), repo = new DiscoveryRepository(db);
+    await repo.refresh(() => [{ ...item, categories: ['Themes', 'Other'] }], true);
+    await repo.save(reducer(repo.state, { type: 'setTags', ids: [item.id], tags: ['themes', 'Work'] }));
+    expect(displayTags(repo.state.extensions[0])).toEqual(['Themes', 'Other', 'Work']);
+    expect((db.values.get(ORGANIZATION_KEY) as ReturnType<typeof emptyOrganization>).tags[item.id]).toEqual(['themes', 'Work']);
+    const restarted = new DiscoveryRepository(db);
+    await restarted.refresh(() => [], true);
+    expect(restarted.state.extensions[0]).toMatchObject({ visibility: 'NotVisible', categories: ['Themes', 'Other'], tags: ['themes', 'Work'] });
+    await restarted.refresh(() => [{ ...item, categories: ['Testing'] }], true);
+    expect(displayTags(restarted.state.extensions[0])).toEqual(['Testing', 'themes', 'Work']);
+    await restarted.save(reducer(restarted.state, { type: 'setTags', ids: [item.id], tags: [] }));
+    expect(displayTags(restarted.state.extensions[0])).toEqual(['Testing']);
+    await restarted.refresh(() => [{ ...item, categories: [] }], true);
+    expect(displayTags(restarted.state.extensions[0])).toEqual([]);
+  });
+  it('自动类别加入搜索和标签交集，不占用十个手动标签额度', async () => {
+    const repo = new DiscoveryRepository(storage());
+    await repo.refresh(() => [{ ...item, categories: ['Programming Languages', 'Testing'] }], true);
+    await repo.save(reducer(repo.state, { type: 'setTags', ids: [item.id], tags: Array.from({ length: 10 }, (_, index) => `Tag${index}`) }));
+    expect(validateState(repo.state)).toBe(true);
+    expect(availableTags(repo.state.extensions)).toContain('Testing');
+    expect(filterExtensions(repo.state.extensions, { group: 'all', status: 'Visible', query: 'programming', tags: ['testing', 'tag0'] })).toHaveLength(1);
+    expect(filterExtensions(repo.state.extensions, { group: 'all', status: 'Visible', query: '', tags: ['missing'] })).toHaveLength(0);
+  });
+  it('兼容旧缓存，并忽略缺失及非法类别，不中断发现', async () => {
+    const db = storage(), repo = new DiscoveryRepository(db);
+    const oldCache = observe(emptyCache(), [item], '2026-09-19T00:00:00.000Z');
+    delete oldCache.records[item.id].lastSeenMetadata.categories;
+    db.values.set(DISCOVERY_KEY, oldCache);
+    await repo.refresh(() => [{ ...item, categories: [' Testing ', 'testing', '', 123, 'x'.repeat(31)] as string[] }], true);
+    expect(repo.state).toMatchObject({ freshness: 'Ready', extensions: [expect.objectContaining({ categories: ['Testing'] })] });
+    await repo.refresh(() => [item], true);
+    expect(repo.state.extensions[0].categories).toEqual([]);
+  });
+  it('只读扫描也展示自动类别，失败保留最后成功类别且不写组织', async () => {
+    const db = storage(), repo = new DiscoveryRepository(db);
+    await repo.refresh(() => [{ ...item, categories: ['Themes'] }], false);
+    expect(db.values.size).toBe(0);
+    await repo.refresh(() => { throw new Error('scan'); }, false);
+    expect(repo.state).toMatchObject({ freshness: 'Stale', extensions: [expect.objectContaining({ categories: ['Themes'] })] });
+  });
   it('未保存项按名称与同名 ID 排序，不依赖扫描顺序或修改输入', () => {
     const values = [{ ...item, id: 'test.z', name: 'Alpha' }, { ...item, id: 'test.b', name: 'Beta' }, { ...item, id: 'test.a', name: 'Alpha' }];
     const organization = emptyOrganization();

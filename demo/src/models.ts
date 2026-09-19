@@ -18,6 +18,8 @@ export interface Extension {
   monogram: string;
   color: string;
   tags: string[];
+  /** 已安装版本声明的自动类别；与可编辑的手动 tags 分开。 */
+  categories?: string[];
 }
 
 /** 演示状态的持久化结构。 */

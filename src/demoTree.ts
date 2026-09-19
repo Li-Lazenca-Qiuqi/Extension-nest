@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import type { Action, DemoState, Extension, Group } from "../demo/src/models";
 import { groupColorToken } from "../demo/src/groupColors";
 import { t } from "./i18n";
+import { displayTags } from '../demo/src/tags';
 
 /** 将现有分类色板映射到可被 VS Code 主题覆盖的图标颜色。 */
 function groupIconColor(color: string | undefined): vscode.ThemeColor {
@@ -149,7 +150,7 @@ export class DemoTreeProvider
       status ? t("Status: {status}", { status }) : undefined,
       status ? t("Not found in the latest discovery. This does not confirm disabling or removal.") : undefined,
       extension.lastSeenAt ? t("Last seen: {timestamp}", { timestamp: extension.lastSeenAt }) : undefined,
-      t("Tags: {tags}", { tags: extension.tags.length > 0 ? extension.tags.join(", ") : t("None") }),
+      t("Tags: {tags}", { tags: displayTags(extension).join(", ") || t("None") }),
     ]
       .filter((line): line is string => Boolean(line))
       .join("\n");

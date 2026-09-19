@@ -2,6 +2,10 @@ import * as vscode from "vscode";
 
 /** 宿主侧文案；扩展名、ID、标签和外部错误等动态内容由调用方原样传入。 */
 export const HOST_MESSAGES = {
+  "Edit manual tags for {target}; automatic categories are kept separately.": {
+    en: "Edit manual tags for {target}; automatic categories are kept separately.",
+    zh: "编辑 {target} 的手动标签；自动类别单独保留。",
+  },
   "Extension Nest Dashboard": {
     en: "Extension Nest Dashboard",
     zh: "Extension Nest Dashboard",

@@ -271,7 +271,7 @@ class ExtensionNestHost implements vscode.Disposable {
       ? firstExtension?.name ?? t("extension")
       : t("{count} extensions", { count: ids.length });
     const input = await vscode.window.showInputBox({
-      prompt: t("Edit tags for {target}", { target }),
+      prompt: t("Edit manual tags for {target}; automatic categories are kept separately.", { target }),
       value: firstExtension?.tags.join(", ") ?? "",
       placeHolder: t("tag1, tag2, tag3"),
       ignoreFocusOut: true,
@@ -391,7 +391,7 @@ class ExtensionNestHost implements vscode.Disposable {
           const manifest = extension.packageJSON;
           return { id: extension.id, name: manifest.displayName || manifest.name || extension.id,
             publisher: manifest.publisher || extension.id.split('.')[0], description: manifest.description || '',
-            version: manifest.version || '—' };
+            version: manifest.version || '—', categories: manifest.categories };
         });
       }, this.lease.owned, () => !this.disposed, hiddenIds);
       if (this.disposed) return;

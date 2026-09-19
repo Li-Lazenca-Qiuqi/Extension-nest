@@ -9,6 +9,8 @@ type MessageParams = Record<string, string | number>;
  * 语言选择在 t 调用时读取，避免模块初始化时锁定语言。
  */
 const messages = {
+  'extension.filterByCategory': { en: 'Automatic category: {tag} · Click to filter', zh: '自动类别：{tag} · 点击筛选' },
+  'tags.automaticHint': { en: 'Edit manual tags here. Automatic category tags follow the extension and are kept separately.', zh: '此处仅编辑手动标签。自动类别标签随扩展更新，单独保留。' },
   'app.title': { en: 'Extensions', zh: '扩展' },
   'app.browserTitle': { en: 'Extension Nest — Interactive Demo', zh: 'Extension Nest — 交互式演示' },
   'app.extensionOverview': { en: 'Extension overview', zh: '扩展概览' },
