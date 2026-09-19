@@ -39,6 +39,7 @@ const messages = {
   'filter.clearTag': { en: 'Clear tag filter {tag}', zh: '清除标签筛选 {tag}' },
   'filter.filters': { en: 'Filters', zh: '筛选条件' },
   'filter.selected': { en: '{count} selected', zh: '已选择 {count} 项' },
+  'filter.clearAll': { en: 'Clear filters', zh: '清除筛选条件' },
   'filter.clear': { en: 'Clear', zh: '清除' },
   'filter.editTags': { en: 'Edit tags', zh: '编辑标签' },
 

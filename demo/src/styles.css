@@ -32,6 +32,7 @@ body.vscode-light{color-scheme:light}
 .dashboard-toolbar .metric strong{font-size:12px}
 .dashboard-toolbar .filters{margin-left:0;flex-wrap:nowrap;width:auto;min-width:0}
 .dashboard-toolbar .filters input:not([type=checkbox]){width:96px;flex:none;font-size:12px}
+.dashboard-toolbar .clear-filters{height:28px;padding:0 9px;font-size:12px;white-space:nowrap;flex:none}
 .dashboard-toolbar .filters .tag-filter{width:max-content;min-width:80px;max-width:min(220px,calc(100vw - 36px));flex:none}
 .dashboard-toolbar .header-actions{flex-shrink:0;margin-left:0;justify-content:flex-end}
 .dashboard-toolbar .header-actions button{font-size:12px;white-space:nowrap}
