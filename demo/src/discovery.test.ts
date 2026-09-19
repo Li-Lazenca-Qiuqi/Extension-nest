@@ -133,7 +133,8 @@ describe('公开发现与组织存储', () => {
     const history = structuredClone(db.values.get(DISCOVERY_KEY));
     await repo.refresh(() => [], true);
     expect(repo.state.extensions[0]).toMatchObject({ visibility: 'NotVisible', tags: ['Research'], groupId: 'group-test' });
-    expect(db.values.get(DISCOVERY_KEY)).toEqual(history);
+    expect(parseDiscoveryCache(db.values.get(DISCOVERY_KEY)).records).toEqual(parseDiscoveryCache(history).records);
+    expect(parseDiscoveryCache(db.values.get(DISCOVERY_KEY)).lastSuccessfulAt).toBe(repo.state.lastSuccessfulAt);
     await repo.refresh(() => [{ ...item, version: '2.0.0' }], true);
     expect(repo.state.extensions[0]).toMatchObject({ visibility: 'Visible', version: '2.0.0', tags: ['Research'], groupId: 'group-test' });
     expect(JSON.stringify(db.values.get(ORGANIZATION_KEY))).not.toMatch(/visibility|version|lastSeen/);
