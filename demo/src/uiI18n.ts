@@ -9,6 +9,7 @@ type MessageParams = Record<string, string | number>;
  * 语言选择在 t 调用时读取，避免模块初始化时锁定语言。
  */
 const messages = {
+  'extension.expandTags': { en: 'Hover or focus to expand tags', zh: '悬停或聚焦以展开标签' },
   'empty.historyOnly': { en: 'No extensions are currently visible. Retained records are available.', zh: '当前没有可见扩展，仍有保留的历史记录。' },
   'empty.viewHistory': { en: 'View retained records', zh: '查看历史记录' },
   'empty.retry': { en: 'Retry discovery', zh: '重新扫描' },
