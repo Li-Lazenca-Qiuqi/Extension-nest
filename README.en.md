@@ -1,9 +1,10 @@
 # Extension Nest
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue)](https://marketplace.visualstudio.com/items?itemName=Lazenca.extension-nest)
+[![Version](https://img.shields.io/badge/version-1.0.1-blue)](https://marketplace.visualstudio.com/items?itemName=Lazenca.extension-nest)
 [![VS Code](https://img.shields.io/badge/VS_Code-%5E1.137.0-007ACC)](https://code.visualstudio.com/)
 [![Marketplace](https://img.shields.io/badge/Marketplace-Extension_Nest-007ACC)](https://marketplace.visualstudio.com/items?itemName=Lazenca.extension-nest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green)](https://github.com/Li-Lazenca-Qiuqi/Extension-nest/blob/main/LICENSE)
+[![GitHub](https://img.shields.io/badge/GitHub-Source-181717?logo=github)](https://github.com/Li-Lazenca-Qiuqi/Extension-nest)
 
 [简体中文](https://github.com/Li-Lazenca-Qiuqi/Extension-nest/blob/main/README.md) | [English](https://github.com/Li-Lazenca-Qiuqi/Extension-nest/blob/main/README.en.md)
 
@@ -51,6 +52,11 @@ Built-in extensions are hidden by default. Enable `extensionNest.showBuiltinExte
 - Organization data and discovery history are stored separately. Only one window can write within the same application storage directory; other windows are read-only. Close the writer window and reload a read-only window to let it acquire write access.
 - **Clear old records** only removes legacy organization placeholders without actual discovery history. Deletion is permanent after confirmation, and no backup is created.
 - Damaged-data recovery resets only the selected organization data or discovery cache and preserves the other. The confirmation dialog explains what will be lost.
+
+## Source and Feedback
+
+- [GitHub repository](https://github.com/Li-Lazenca-Qiuqi/Extension-nest)
+- [Bug reports and feature requests](https://github.com/Li-Lazenca-Qiuqi/Extension-nest/issues)
 
 ## Changelog
 

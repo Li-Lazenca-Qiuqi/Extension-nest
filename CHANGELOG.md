@@ -1,5 +1,14 @@
 # 版本记录
 
+## 1.0.1 2026-09-19 文档与 Marketplace 项目入口修正
+
+1. [doc] 修正中文 README 标点与中英文间距，统一中英文版本徽章。
+2. [fix] 增加 GitHub 源码徽章、项目主页与反馈链接，补齐发布包 homepage 和 bugs 元数据，便于从 Marketplace 访问仓库。
+3. [refactor] 包含正式前端 webview 目录整理，移除浏览器 Demo 存储与重置入口，示例数据仅供测试。
+4. [doc] 发布包使用根 README，包含英文说明及语言切换链接。
+
+本次生成 1.0.1 VSIX，由用户上传 Marketplace。
+
 ## 1.0.0 2026-09-19 正式命名与整理功能完善
 
 1. [feat] 正式名称改为 Extension Nest，扩展 ID 为 Lazenca.extension-nest，采用 MIT 许可证；旧 Demo 数据不自动迁移，新 ID 独立保存数据。

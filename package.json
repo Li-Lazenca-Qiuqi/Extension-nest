@@ -2,7 +2,7 @@
   "name": "extension-nest",
   "displayName": "Extension Nest",
   "description": "%description%",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "publisher": "Lazenca",
   "icon": "media/extension-nest-icon.png",
@@ -23,7 +23,7 @@
   "scripts": {
     "build": "npm --prefix webview run build && node esbuild.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.extension.json",
-    "package": "npm run build && vsce package --no-dependencies --allow-missing-repository --out extension-nest-1.0.0.vsix"
+    "package": "npm run build && vsce package --no-dependencies --allow-missing-repository --out extension-nest-1.0.1.vsix"
   },
   "contributes": {
     "colors": [
@@ -302,5 +302,9 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/Li-Lazenca-Qiuqi/Extension-nest.git"
+  },
+  "homepage": "https://github.com/Li-Lazenca-Qiuqi/Extension-nest#readme",
+  "bugs": {
+    "url": "https://github.com/Li-Lazenca-Qiuqi/Extension-nest/issues"
   }
 }

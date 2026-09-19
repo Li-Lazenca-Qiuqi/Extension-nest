@@ -91,7 +91,7 @@ README、安装说明与 0.2.1 CHANGELOG 已在授权发布任务中同步（原
 ## 发布收尾
 
 - [x] DELIVERY-01（2026-09-19）：版本更新至 1.0.0，更新 CHANGELOG 并分批提交，生成 extension-nest-1.0.0.vsix。160 项测试、类型检查、构建与包内容检查通过；独立临时 user-data/extensions 目录 CLI 安装成功，枚举得到 lazenca.extension-nest@1.0.0。此次安装检查不冒充新一轮 UI 人工验收。
-- [ ] DELIVERY-02：用户自行将 1.0.0 VSIX 发布到 Marketplace；源码已按授权推送，代理未执行线上发布。
+- [ ] DELIVERY-02：用户自行将最新 1.0.1 VSIX 发布到 Marketplace；源码已按授权推送，代理未执行线上发布。
 
 ## 1.0.0 后的源码整理
 
@@ -99,3 +99,8 @@ README、安装说明与 0.2.1 CHANGELOG 已在授权发布任务中同步（原
 - [x] README 章节骨架与功能事实已补齐，打包直接读取根 README。
 - [x] 用户完成中文 README，按用户定稿保留章节，补充徽章、英文版与语言链接。
 - [x] 保持 1.0.0 重新打包，包含 webview 源码整理与中英文 README；159 项测试、类型检查及构建通过。原 v1.0.0 标签保留首次交付位置，不改写已推送标签。
+
+## 1.0.1 patch 交付
+
+- [x] 修正 README 标点与格式，增加中英文 GitHub 入口及 homepage/bugs 元数据。
+- [x] 版本更新至 1.0.1，生产构建及 VSIX 检查通过；确认发布清单包含源码链接、正确版本和中英文 README。本次仅修改文档与包元数据，沿用此前 159 项测试通过记录。

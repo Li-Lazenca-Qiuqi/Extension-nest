@@ -1,6 +1,6 @@
 # Extension Nest 产品说明
 
-更新日期：2026-09-19。代码版本 1.0.0，publisher Lazenca。[决策 004](decisions/004-public-vsix-discovery.md)为当前产品范围；已接入公开发现、历史缓存和正式组织存储；本次交付 1.0.0 本地 VSIX，由用户发布 Marketplace。
+更新日期：2026-09-19。代码版本 1.0.1，publisher Lazenca。[决策 004](decisions/004-public-vsix-discovery.md)为当前产品范围；已接入公开发现、历史缓存和正式组织存储；本次交付 1.0.1 本地 VSIX，由用户发布 Marketplace。
 
 ## 产品定位
 
