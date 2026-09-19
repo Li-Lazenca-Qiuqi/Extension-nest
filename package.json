@@ -1,12 +1,12 @@
 {
-  "name": "extension-nest-demo",
-  "displayName": "Extension Nest Demo",
+  "name": "extension-nest",
+  "displayName": "Extension Nest",
   "description": "%description%",
-  "version": "0.2.1",
+  "version": "1.0.0",
   "private": true,
   "publisher": "Lazenca",
   "icon": "media/extension-nest-icon.png",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "engines": {
     "vscode": "^1.137.0"
   },
@@ -23,7 +23,7 @@
   "scripts": {
     "build": "npm --prefix demo run build && node esbuild.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.extension.json",
-    "package": "npm run build && vsce package --no-dependencies --allow-missing-repository --skip-license --readme-path demo/INSTALL.md --out extension-nest-demo.vsix"
+    "package": "npm run build && vsce package --no-dependencies --allow-missing-repository --readme-path demo/INSTALL.md --out extension-nest-1.0.0.vsix"
   },
   "contributes": {
     "colors": [
