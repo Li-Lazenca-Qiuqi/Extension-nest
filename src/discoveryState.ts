@@ -1,4 +1,4 @@
-import type { DemoState, Extension } from '../demo/src/models';
+import type { DashboardState, Extension } from '../webview/src/models';
 import type { OrganizationState } from './organizationState';
 import { t } from './i18n';
 
@@ -75,7 +75,7 @@ export function observe(cache: DiscoveryCache, values: readonly Observation[], n
 }
 
 /** 缺少本轮成功快照时只给 Unverified；不能从历史或组织数据推断启停。 */
-export function projectDiscovery(organization: OrganizationState, cache: DiscoveryCache, visible?: ReadonlySet<string>): DemoState {
+export function projectDiscovery(organization: OrganizationState, cache: DiscoveryCache, visible?: ReadonlySet<string>): DashboardState {
   const ids = new Set([...organization.extensionOrder, ...Object.keys(organization.assignments), ...Object.keys(organization.tags), ...Object.keys(cache.records)]);
   // 已保存的顺序优先；未保存项不依赖扫描或缓存对象的插入顺序。
   const savedIds = new Set(organization.extensionOrder);

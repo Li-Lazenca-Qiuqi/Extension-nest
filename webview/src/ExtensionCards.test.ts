@@ -2,7 +2,7 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { expect,it } from 'vitest';
 import ExtensionCards from './ExtensionCards';
-import { seedState } from './seed';
+import { seedState } from '../test/extensionFixture';
 /** 防止默认界面退回只有组名字段、没有分区的平铺卡片。 */
 it('renders default group sections expanded with exactly one card per extension',()=>{
  const noop=()=>{};

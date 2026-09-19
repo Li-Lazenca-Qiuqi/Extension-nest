@@ -2,7 +2,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Run Extension Nest Demo",
+      "name": "Run Extension Nest",
       "type": "extensionHost",
       "request": "launch",
       "runtimeExecutable": "${execPath}",

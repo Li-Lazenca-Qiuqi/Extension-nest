@@ -2,7 +2,7 @@
 import { act, createElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import { beforeAll, afterEach, expect, it, vi } from 'vitest';
-import { seedState } from './seed';
+import { seedState } from '../test/extensionFixture';
 import { setUiLanguage } from './uiI18n';
 import type AppType from './App';
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT=true;

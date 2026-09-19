@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { seedState } from './seed';
+import { seedState } from '../test/extensionFixture';
 import { migrateDemoOrganization, parseOrganizationState, readOrganizationState } from '../../src/organizationState';
 
 it('迁移保留分组、颜色、顺序和标签，但不保存任何安装或启停状态', () => {

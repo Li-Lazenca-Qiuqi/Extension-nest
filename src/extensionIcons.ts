@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { Buffer } from 'node:buffer';
-import { marketplaceIconUrl } from '../demo/src/extensionIconUrl';
+import { marketplaceIconUrl } from '../webview/src/extensionIconUrl';
 
 const cache=new Map<string,Promise<string|undefined>>();
 const mimeTypes:Record<string,string>={png:'image/png',svg:'image/svg+xml',jpg:'image/jpeg',jpeg:'image/jpeg',gif:'image/gif',webp:'image/webp'};

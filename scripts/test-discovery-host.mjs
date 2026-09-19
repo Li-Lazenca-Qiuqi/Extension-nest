@@ -31,7 +31,7 @@ exports.activate = () => {
   setTimeout(async () => {
     let outcome;
     try {
-      const extension = vscode.extensions.getExtension('Lazenca.extension-nest-demo');
+      const extension = vscode.extensions.getExtension('Lazenca.extension-nest');
       if (!extension) throw new Error('Target extension missing');
       const api = await extension.activate();
       let state;

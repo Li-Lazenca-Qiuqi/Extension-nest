@@ -1,12 +1,12 @@
 import * as vscode from "vscode";
 import { randomBytes } from "node:crypto";
-import type { DemoState } from "../demo/src/models";
+import type { DashboardState } from "../webview/src/models";
 import { loadExtensionIcon } from "./extensionIcons";
 import { escapeHtml, t } from "./i18n";
 
 /** Dashboard 可以请求宿主执行的回调集合。 */
 export interface DashboardHostCallbacks {
-  getState(): DemoState;
+  getState(): DashboardState;
   onRefresh(): Promise<void>;
   onRepairData?(): Promise<void>;
   onCleanupUnverified(): Promise<void>;
@@ -48,7 +48,7 @@ export class DashboardPanel {
       {
         enableScripts: true,
         retainContextWhenHidden: true,
-        localResourceRoots: [vscode.Uri.joinPath(this.extensionUri, "demo", "dist")],
+        localResourceRoots: [vscode.Uri.joinPath(this.extensionUri, "webview", "dist")],
       },
     );
     this.panel = panel;
@@ -79,7 +79,7 @@ export class DashboardPanel {
   }
 
   /** 向已打开的 Dashboard 发送最新状态。 */
-  async postState(state: DemoState): Promise<void> {
+  async postState(state: DashboardState): Promise<void> {
     const revision = ++this.stateRevision;
     if (!this.panel || !this.ready) {
       return;
@@ -166,7 +166,7 @@ export class DashboardPanel {
 
   /** 读取并改写 Vite 产物，使其只加载扩展允许的本地 Webview 资源。 */
   private async renderHtml(webview: vscode.Webview): Promise<string> {
-    const distUri = vscode.Uri.joinPath(this.extensionUri, "demo", "dist");
+    const distUri = vscode.Uri.joinPath(this.extensionUri, "webview", "dist");
     const indexUri = vscode.Uri.joinPath(distUri, "index.html");
 
     try {

@@ -1,5 +1,5 @@
 import { describe,it,expect } from 'vitest';
-import { seedState } from './seed';
+import { seedState } from '../test/extensionFixture';
 import { groupExtensions } from './groupExtensions';
 import { reducer } from './state';
 describe('default grouped dashboard',()=>{

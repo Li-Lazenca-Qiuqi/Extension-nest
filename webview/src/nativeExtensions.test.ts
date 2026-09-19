@@ -1,5 +1,5 @@
 import { beforeEach, expect, it, vi } from 'vitest';
-import { seedState } from './seed';
+import { seedState } from '../test/extensionFixture';
 const native=vi.hoisted(()=>({calls:[] as unknown[][],fail:false,failManage:false,wait:undefined as Promise<void>|undefined,failSearch:false,choice:undefined as string|undefined,showErrorMessage:vi.fn()}));
 vi.mock('vscode',()=>({env:{language:'en'},commands:{executeCommand:async(...args:unknown[])=>{native.calls.push(args);if(args[0]==='_extensions.manage'){if(native.failManage||native.fail)throw new Error('Unavailable');await native.wait;}if((native.fail && args[0]==='extension.open') || native.failSearch)throw new Error('Unavailable')}},window:{showErrorMessage:native.showErrorMessage}}));
 import { openNativeExtension } from '../../src/nativeExtensions';

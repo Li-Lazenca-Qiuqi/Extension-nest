@@ -23,7 +23,7 @@ export interface Extension {
 }
 
 /** 演示状态的持久化结构。 */
-export interface DemoState {
+export interface DashboardState {
   schemaVersion: 1;
   groups: Group[];
   extensions: Extension[];
@@ -46,5 +46,4 @@ export type Action =
   | { type: "reorderGroup"; id: string; targetId: string; after?: boolean }
   | { type: "shiftGroup"; id:string; direction:-1|1 }
   | { type: "sortExtensions"; groupId:string|null; field:'name'|'publisher'; direction:-1|1 }
-  | { type: "shiftExtension"; id:string; direction:-1|1 }
-  | { type: "reset" };
+  | { type: "shiftExtension"; id:string; direction:-1|1 };

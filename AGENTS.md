@@ -11,11 +11,11 @@ Extension Nest 为 VS Code 提供插件分组、原生管理入口与 Dashboard�
 3. [PRD 归档说明](doc/PRD/README.md)：原 19 份 PRD 已归档，仅供追溯；全部待办与验收条件由 TODO 承接。
 4. [Roadmap](doc/Roadmap.md)：阶段目标与退出条件。
 5. [当前决策](doc/decisions/004-public-vsix-discovery.md)：设计取舍；001～003 保留历史与未被替代的约定。
-6. [公开发现实现](doc/note/public-discovery-implementation.md)：当前结构、数据与验证边界；[Demo 实现说明](doc/note/demo-implementation.md)保留历史记录。
+6. [公开发现实现](doc/note/public-discovery-implementation.md)：当前结构、数据与验证边界。
 
 - `src/`：扩展宿主、原生 TreeView 和 Webview 消息桥。
-- `demo/src/`：Dashboard、示例数据、状态模型及测试。
-- `demo/test/`：测试替身。
+- `webview/src/`：Dashboard、状态模型及测试。
+- `webview/test/`：测试替身与专用夹具。
 - `doc/note/`：专题笔记与来源记录。
 - `doc/archive/`：历史记录，按需读取，不作为当前规范。
 - `README.md`：对外安装与使用说明，主要由用户维护或按明确要求更新。

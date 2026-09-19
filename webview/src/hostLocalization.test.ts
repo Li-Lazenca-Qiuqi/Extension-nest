@@ -1,8 +1,8 @@
 import { afterEach, expect, it } from 'vitest';
 import { env } from '../test/vscodeMock';
 import { HOST_MESSAGES, t } from '../../src/i18n';
-import { DemoGroupNode, DemoTreeProvider } from '../../src/demoTree';
-import { seedState } from './seed';
+import { ExtensionGroupNode, ExtensionTreeProvider } from '../../src/extensionTree';
+import { seedState } from '../test/extensionFixture';
 
 afterEach(()=>{env.language='en'});
 
@@ -28,8 +28,8 @@ it('keeps dynamic values literal and preserves every template parameter',()=>{
 it('localizes the virtual Ungrouped label without changing custom group names or IDs',()=>{
  const snapshot=structuredClone(seedState);
  env.language='zh-cn';
- const tree=new DemoTreeProvider(snapshot,async()=>{});
- const nodes=tree.getChildren().filter((node):node is DemoGroupNode=>node instanceof DemoGroupNode);
+ const tree=new ExtensionTreeProvider(snapshot,async()=>{});
+ const nodes=tree.getChildren().filter((node):node is ExtensionGroupNode=>node instanceof ExtensionGroupNode);
  expect(nodes).toHaveLength(snapshot.groups.length+1);
  expect(nodes.at(-1)?.label).toBe('未分组');
  expect(nodes[0].label).toBe(snapshot.groups[0].name);

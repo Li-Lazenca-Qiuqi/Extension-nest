@@ -8,13 +8,13 @@ import GroupExpansionIcon from './GroupExpansionIcon';
 import ExtensionCards from './ExtensionCards';
 import TagEditor from './TagEditor';
 import { availableTags, filterExtensions } from './filterExtensions';
-import { useDemoStore } from './useDemoStore';
+import { useExtensionStore } from './useExtensionStore';
 import { statusText, t } from './uiI18n';
 
-type DialogState={kind:'create'|'reset'|'tags';id?:string;ids?:string[]};
+type DialogState={kind:'create'|'tags';id?:string;ids?:string[]};
 /** Dashboard 的组与标签筛选彼此独立，所有修改统一交给宿主。 */
 export default function App(){
- const {repairData,state,ready,saved,hostError,nativeFilter,dispatch,openExtension,refresh,openExtensions,cleanupUnverified,icons,isNative}=useDemoStore();
+ const {repairData,state,ready,saved,hostError,nativeFilter,dispatch,openExtension,refresh,openExtensions,cleanupUnverified,icons,isNative}=useExtensionStore();
  const [collapsedGroups,setCollapsedGroups]=useState<Record<string,boolean>>({});
  const [twoColumns,setTwoColumns]=useState(false);
  const tagMenu=useRef<HTMLDetailsElement>(null);
@@ -62,12 +62,11 @@ export default function App(){
   {rows.length>0&&rows.every(extension=>extension.visibility!=='Visible')&&status==='all'&&<p className="history-notice">{t('history.notice')}</p>}
   <ExtensionCards onSortAction={dispatch} collapsedGroups={collapsedGroups} onToggleGroup={id=>setCollapsedGroups(current=>({...current,[id]:!current[id]}))} twoColumns={twoColumns} icons={icons} isNative={isNative} activeGroup={group} filtered={filtered} query={query} rows={rows} groups={state.groups} selected={selected} onSelect={setSelected} onDropExtensions={(ids,groupId,beforeId)=>{dispatch({type:'move',ids,groupId,beforeId});setSelected([])}} menu={menu} onMenu={setMenu} onOpenExtension={openExtension} onCopy={copy} onEditTags={id=>open({kind:'tags',id})} onFilterTag={toggleTag}/>
   </section></main>
-  <footer><div className="discovery-summary"><span>{isNative?`${t('app.localHost')} · ${statusText(state.freshness)}${state.readOnly?` · ${t('status.readOnly')}`:''}`:t('app.demoSample')}</span>{isNative&&<LastScan value={state.lastSuccessfulAt}/>}</div><div>{isNative?<><button onClick={openExtensions}>{t('app.openExtensions')}</button><button onClick={refresh}>{t('app.refresh')}</button></>:<button onClick={()=>open({kind:'reset'})}>{t('app.resetDemo')}</button>}<span className={saved?'saved':'danger-text'}><Check size={14}/>{!ready?t('app.connecting'):state.freshness==='Error'?t('empty.discoveryFailed'):state.freshness==='Stale'?t('app.staleDiscovery'):state.error?t('app.attentionRequired'):state.readOnly?t('app.sessionOnly'):saved?t('app.saved'):t('app.saveFailed')}</span></div></footer>
+  <footer><div className="discovery-summary"><span>{isNative?`${t('app.localHost')} · ${statusText(state.freshness)}${state.readOnly?` · ${t('status.readOnly')}`:''}`:t('errors.openInVsCode')}</span>{isNative&&<LastScan value={state.lastSuccessfulAt}/>}</div><div>{isNative?<><button onClick={openExtensions}>{t('app.openExtensions')}</button><button onClick={refresh}>{t('app.refresh')}</button></>:null}<span className={saved?'saved':'danger-text'}><Check size={14}/>{!ready?t('app.connecting'):state.freshness==='Error'?t('empty.discoveryFailed'):state.freshness==='Stale'?t('app.staleDiscovery'):state.error?t('app.attentionRequired'):state.readOnly?t('app.sessionOnly'):saved?t('app.saved'):t('app.saveFailed')}</span></div></footer>
   {(hostError||state.error||notice)&&<div className="toast" role="status">{hostError||state.error||notice}</div>}
-  {dialog&&<Modal title={dialog.kind==='create'?t('group.new'):dialog.kind==='reset'?t('dialog.resetTitle'):t('dialog.editTagsTitle')} onClose={()=>setDialog(null)}>
+  {dialog&&<Modal title={dialog.kind==='create'?t('group.new'):t('dialog.editTagsTitle')} onClose={()=>setDialog(null)}>
    {dialog.kind==='create'&&<form onSubmit={submitName}><label>{t('group.name')}<input autoFocus value={name} onChange={e=>setName(e.target.value)} placeholder={t('group.placeholder')}/></label>{error&&<p className="danger-text" role="alert">{error}</p>}<div className="modal-actions"><button type="button" onClick={()=>setDialog(null)}>{t('dialog.cancel')}</button><button className="primary">{t('group.create')}</button></div></form>}
    {dialog.kind==='tags'&&<TagEditor initial={initialTags} suggestions={tags} count={ids.length} onCancel={()=>setDialog(null)} onSave={values=>{dispatch({type:'setTags',ids,tags:values});setDialog(null);setSelected([])}}/>}
-   {dialog.kind==='reset'&&<><p>{t('dialog.restoreSample')}</p><div className="modal-actions"><button onClick={()=>setDialog(null)}>{t('dialog.cancel')}</button><button className="danger" onClick={()=>{dispatch({type:'reset'});setDialog(null);clear()}}>{t('app.resetDemo')}</button></div></>}
   </Modal>}
  </div>
 }

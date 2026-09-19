@@ -1,5 +1,5 @@
 import { describe,it,expect } from 'vitest';
-import { seedState } from './seed';
+import { seedState } from '../test/extensionFixture';
 import { filterExtensions, availableTags } from './filterExtensions';
 /** 筛选只读取标签和归属，不得改变分组数据。 */
 describe('independent tag filtering',()=>{

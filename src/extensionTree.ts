@@ -1,8 +1,8 @@
 import * as vscode from "vscode";
-import type { Action, DemoState, Extension, Group } from "../demo/src/models";
-import { groupColorToken } from "../demo/src/groupColors";
+import type { Action, DashboardState, Extension, Group } from "../webview/src/models";
+import { groupColorToken } from "../webview/src/groupColors";
 import { t } from "./i18n";
-import { displayTags } from '../demo/src/tags';
+import { displayTags } from '../webview/src/tags';
 
 /** 将现有分类色板映射到可被 VS Code 主题覆盖的图标颜色。 */
 function groupIconColor(color: string | undefined): vscode.ThemeColor {
@@ -10,7 +10,7 @@ function groupIconColor(color: string | undefined): vscode.ThemeColor {
 }
 
 /** 组树节点，Ungrouped 使用 null 作为组 ID。 */
-export class DemoGroupNode {
+export class ExtensionGroupNode {
   readonly kind = "group" as const;
 
   constructor(
@@ -21,7 +21,7 @@ export class DemoGroupNode {
 }
 
 /** 演示扩展树节点，节点只代表状态中的演示记录。 */
-export class DemoExtensionNode {
+export class ExtensionNode {
   readonly kind = "extension" as const;
 
   constructor(
@@ -31,47 +31,47 @@ export class DemoExtensionNode {
 }
 
 /** TreeView 使用的节点联合类型。 */
-export type DemoTreeNode = DemoGroupNode | DemoExtensionNode;
+export type DemoTreeNode = ExtensionGroupNode | ExtensionNode;
 
 /** 判断值是否为组节点。 */
-export function isDemoGroupNode(value: unknown): value is DemoGroupNode {
-  return value instanceof DemoGroupNode;
+export function isExtensionGroupNode(value: unknown): value is ExtensionGroupNode {
+  return value instanceof ExtensionGroupNode;
 }
 
 /** 判断值是否为扩展节点。 */
-export function isDemoExtensionNode(value: unknown): value is DemoExtensionNode {
-  return value instanceof DemoExtensionNode;
+export function isExtensionNode(value: unknown): value is ExtensionNode {
+  return value instanceof ExtensionNode;
 }
 
 /** 负责把演示状态投影为 VS Code 原生分组树。 */
-export class DemoTreeProvider
+export class ExtensionTreeProvider
   implements vscode.TreeDataProvider<DemoTreeNode>, vscode.TreeDragAndDropController<DemoTreeNode>
 {
   readonly dropMimeTypes = [
     "application/vnd.code.tree.extensionnest.groups",
-    "application/vnd.extension-nest.demo-group",
-    "application/vnd.extension-nest.demo-extension",
+    "application/vnd.extension-nest.group",
+    "application/vnd.extension-nest.extension",
   ];
 
   readonly dragMimeTypes = [
-    "application/vnd.extension-nest.demo-group",
-    "application/vnd.extension-nest.demo-extension",
+    "application/vnd.extension-nest.group",
+    "application/vnd.extension-nest.extension",
   ];
 
   private readonly changeEmitter = new vscode.EventEmitter<DemoTreeNode | undefined | null | void>();
-  private state: DemoState;
+  private state: DashboardState;
 
   readonly onDidChangeTreeData = this.changeEmitter.event;
 
   constructor(
-    initialState: DemoState,
+    initialState: DashboardState,
     private readonly dispatch: (action: unknown) => Promise<void>,
   ) {
     this.state = initialState;
   }
 
   /** 更新树使用的状态快照并刷新所有可见节点。 */
-  setState(state: DemoState): void {
+  setState(state: DashboardState): void {
     this.state = state;
     this.changeEmitter.fire(undefined);
   }
@@ -82,8 +82,8 @@ export class DemoTreeProvider
   }
 
   /** 返回节点的父节点，便于 VS Code 恢复展开状态。 */
-  getParent(element: DemoTreeNode): DemoGroupNode | undefined {
-    if (!isDemoExtensionNode(element)) {
+  getParent(element: DemoTreeNode): ExtensionGroupNode | undefined {
+    if (!isExtensionNode(element)) {
       return undefined;
     }
 
@@ -104,18 +104,18 @@ export class DemoTreeProvider
       ];
     }
 
-    if (!isDemoGroupNode(element)) {
+    if (!isExtensionGroupNode(element)) {
       return [];
     }
 
     return this.state.extensions
       .filter((extension) => extension.groupId === element.groupId)
-      .map((extension) => new DemoExtensionNode(extension, element.groupId));
+      .map((extension) => new ExtensionNode(extension, element.groupId));
   }
 
   /** 把组或扩展节点转换为带有状态提示的原生 TreeItem。 */
   getTreeItem(element: DemoTreeNode): vscode.TreeItem {
-    if (isDemoGroupNode(element)) {
+    if (isExtensionGroupNode(element)) {
       const extensions = this.state.extensions.filter((extension) => extension.groupId === element.groupId);
       const treeItem = new vscode.TreeItem(
         element.label,
@@ -170,22 +170,22 @@ export class DemoTreeProvider
     _token: vscode.CancellationToken,
   ): void {
     const extensionIds = source
-      .filter(isDemoExtensionNode)
+      .filter(isExtensionNode)
       .map((node) => node.extension.id);
     if (extensionIds.length > 0) {
       dataTransfer.set(
-        "application/vnd.extension-nest.demo-extension",
+        "application/vnd.extension-nest.extension",
         new vscode.DataTransferItem(JSON.stringify({ ids: extensionIds })),
       );
     }
 
     const groupIds = source
-      .filter(isDemoGroupNode)
+      .filter(isExtensionGroupNode)
       .map((node) => node.groupId)
       .filter((groupId): groupId is string => groupId !== null);
     if (groupIds.length > 0) {
       dataTransfer.set(
-        "application/vnd.extension-nest.demo-group",
+        "application/vnd.extension-nest.group",
         new vscode.DataTransferItem(JSON.stringify({ ids: groupIds })),
       );
     }
@@ -201,10 +201,10 @@ export class DemoTreeProvider
       return;
     }
 
-    const extensionPayload = await this.readPayload(dataTransfer, "application/vnd.extension-nest.demo-extension");
+    const extensionPayload = await this.readPayload(dataTransfer, "application/vnd.extension-nest.extension");
     if (extensionPayload) {
       // 使用最新归属，避免拖动期间目标条目移组后仍写入旧组。
-      const groupId = isDemoGroupNode(target)
+      const groupId = isExtensionGroupNode(target)
         ? target.groupId
         : this.state.extensions.find((extension) => extension.id === target.extension.id)?.groupId;
       if (groupId === undefined || (groupId !== null && !this.state.groups.some((group) => group.id === groupId))) {
@@ -217,11 +217,11 @@ export class DemoTreeProvider
       return;
     }
 
-    if (!isDemoGroupNode(target)) {
+    if (!isExtensionGroupNode(target)) {
       return;
     }
 
-    const groupPayload = await this.readPayload(dataTransfer, "application/vnd.extension-nest.demo-group");
+    const groupPayload = await this.readPayload(dataTransfer, "application/vnd.extension-nest.group");
     if (!groupPayload || target.groupId === null) {
       return;
     }
@@ -254,10 +254,10 @@ export class DemoTreeProvider
   }
 
   /** 创建组节点并统一 Ungrouped 的显示属性。 */
-  private createGroupNode(group: Group | null): DemoGroupNode {
+  private createGroupNode(group: Group | null): ExtensionGroupNode {
     return group
-      ? new DemoGroupNode(group.id, group.name, group.color)
-      : new DemoGroupNode(null, t("Ungrouped"), undefined);
+      ? new ExtensionGroupNode(group.id, group.name, group.color)
+      : new ExtensionGroupNode(null, t("Ungrouped"), undefined);
   }
 }
 

@@ -1,4 +1,4 @@
-import { normalizeTags } from '../demo/src/tags';
+import { normalizeTags } from '../webview/src/tags';
 import { t } from './i18n';
 
 export interface OrganizationGroup {

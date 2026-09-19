@@ -40,7 +40,7 @@ Dashboard 默认 Visible，All 或 Not found 可查看保留记录；原生树�
 
 本轮单元测试、类型检查与构建及 Windows 6 个隔离开发宿主场景见[公开发现实现与验证](note/public-discovery-implementation.md)。50 个未激活夹具可见，禁用一个后保留 Not visible，恢复/重启/Workspace 切换正常；命名 Profile 无默认 Profile 的夹具历史，切回后恢复。未测试 Remote、复制/继承 Profile、运行中切换 Profile 和真实双窗口。
 
-正式入口不读取 seed；只有实际保存过的 extensionNest.demo.state 可迁移组织关系。浏览器预览仍保留样例及 Reset demo，不是正式宿主行为。旧实现记录见 [Demo 记录](note/demo-implementation.md)。活动进度见 [TODO](TODO.md)；README/CHANGELOG 本轮不改，版本、提交和发布另需授权。
+正式入口不读取 seed；只有实际保存过的 extensionNest.demo.state 可迁移组织关系。前端代码位于 webview/；示例数据仅保留为测试夹具。独立浏览器不加载示例、不写 localStorage，未连接 VS Code 宿主时显示只读空状态。活动进度见 [TODO](TODO.md)；README 由用户维护，并直接作为后续 VSIX 的介绍；版本、提交和发布另需授权。
 
 2026-09-17：默认从树、Dashboard 和统计中隐藏当前 VS Code 随应用分发的内置扩展；`extensionNest.showBuiltinExtensions` 可重新显示。发现历史及隐藏项组织数据保留，按当前应用 manifest ID 识别，不按 Microsoft/vscode 发布者前缀过滤。
 

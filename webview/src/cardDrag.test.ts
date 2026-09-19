@@ -3,7 +3,7 @@ import { act,createElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach,beforeEach,expect,it,vi } from 'vitest';
 import ExtensionCards from './ExtensionCards';
-import { seedState } from './seed';
+import { seedState } from '../test/extensionFixture';
 import { reducer } from './state';
 (globalThis as typeof globalThis & {IS_REACT_ACT_ENVIRONMENT:boolean}).IS_REACT_ACT_ENVIRONMENT=true;
 let cleanup=()=>{};let target:Element|null=null;

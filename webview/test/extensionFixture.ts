@@ -1,4 +1,4 @@
-import type { DemoState, Extension, Group } from "./models";
+import type { DashboardState, Extension, Group } from "../src/models";
 
 const groupColors = {
   aiCoding: "#7C3AED",
@@ -187,7 +187,7 @@ const extensions: Extension[] = [
 
 
 /** 演示初始状态；状态操作会通过副本使用这份数据。 */
-export const seedState: DemoState = {
+export const seedState: DashboardState = {
   schemaVersion: 1,
   groups,
   extensions: [...extensions].sort((a, b) => a.name.localeCompare(b.name) || a.id.localeCompare(b.id)),

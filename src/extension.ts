@@ -4,26 +4,26 @@ import { readBundledExtensionIds } from "./bundledExtensions";
 import { WriterLease } from "./writerLease";
 import * as vscode from "vscode";
 import { showCapabilityProbe } from "./capabilityProbe";
-import type { Action, DemoState, Group } from "../demo/src/models";
-import { reducer } from "../demo/src/state";
-import { normalizeTags } from "../demo/src/tags";
-import { setUiLanguage } from "../demo/src/uiI18n";
+import type { Action, DashboardState, Group } from "../webview/src/models";
+import { reducer } from "../webview/src/state";
+import { normalizeTags } from "../webview/src/tags";
+import { setUiLanguage } from "../webview/src/uiI18n";
 import { openNativeExtension } from "./nativeExtensions";
 import { DashboardPanel, type DashboardFilter, type DashboardHostCallbacks } from "./dashboardPanel";
 import { t } from "./i18n";
 import {
-  DemoExtensionNode,
-  DemoGroupNode,
-  DemoTreeProvider,
-  isDemoExtensionNode,
-  isDemoGroupNode,
-} from "./demoTree";
+  ExtensionNode,
+  ExtensionGroupNode,
+  ExtensionTreeProvider,
+  isExtensionNode,
+  isExtensionGroupNode,
+} from "./extensionTree";
 
 
 const VIEW_ID = "extensionNest.groups";
 
 /** 扩展激活时创建扩展宿主、原生树和编辑器 Dashboard。 */
-export function activate(context: vscode.ExtensionContext): { getSnapshot(): DemoState } | undefined {
+export function activate(context: vscode.ExtensionContext): { getSnapshot(): DashboardState } | undefined {
   setUiLanguage(vscode.env.language);
   const host = new ExtensionNestHost(context);
   host.start();
@@ -39,11 +39,11 @@ export function deactivate(): void {
 /** 连接状态层、TreeView、Dashboard 和组织命令的宿主服务。 */
 class ExtensionNestHost implements vscode.Disposable {
   /** 只向开发宿主提供副本，供隔离集成测试核验真实视图快照。 */
-  getSnapshot(): DemoState { return structuredClone(this.state); }
-  private state: DemoState;
-  private readonly tree: DemoTreeProvider;
+  getSnapshot(): DashboardState { return structuredClone(this.state); }
+  private state: DashboardState;
+  private readonly tree: ExtensionTreeProvider;
   private readonly dashboard: DashboardPanel;
-  private readonly treeView: vscode.TreeView<DemoGroupNode | DemoExtensionNode>;
+  private readonly treeView: vscode.TreeView<ExtensionGroupNode | ExtensionNode>;
   private readonly repository: DiscoveryRepository;
   private readonly lease: WriterLease;
   private disposed = false;
@@ -55,7 +55,7 @@ class ExtensionNestHost implements vscode.Disposable {
     this.refreshCoordinator = new RefreshCoordinator(work => this.enqueue(work), current => this.readSnapshot(current));
     this.lease = new WriterLease(context.globalStorageUri.toString());
     this.state = this.repository.state;
-    this.tree = new DemoTreeProvider(this.state, (action) => this.dispatchAction(action));
+    this.tree = new ExtensionTreeProvider(this.state, (action) => this.dispatchAction(action));
     this.treeView = vscode.window.createTreeView(VIEW_ID, {
       treeDataProvider: this.tree,
       canSelectMany: true,
@@ -133,7 +133,7 @@ class ExtensionNestHost implements vscode.Disposable {
     register("extensionNest.extensionUp", (value?:unknown)=>this.shiftExtension(value,-1));
     register("extensionNest.extensionDown", (value?:unknown)=>this.shiftExtension(value,1));
     register("extensionNest.sortExtensions", async(value?:unknown)=>{
-      const groupId=isDemoGroupNode(value)?value.groupId:undefined;if(groupId===undefined)return;
+      const groupId=isExtensionGroupNode(value)?value.groupId:undefined;if(groupId===undefined)return;
       const choices=[{label:t('Name A–Z'),field:'name',direction:1},{label:t('Name Z–A'),field:'name',direction:-1},{label:t('Publisher A–Z'),field:'publisher',direction:1},{label:t('Publisher Z–A'),field:'publisher',direction:-1}];
       const choice=await vscode.window.showQuickPick(choices,{placeHolder:t('Sort extensions in group')});
       if(choice)await this.dispatchAction({type:'sortExtensions',groupId,field:choice.field,direction:choice.direction});
@@ -347,7 +347,7 @@ class ExtensionNestHost implements vscode.Disposable {
   }
 
   /** 保存状态快照，失败时保留当前有效状态并报告原因。 */
-  private async persist(state: DemoState): Promise<boolean> {
+  private async persist(state: DashboardState): Promise<boolean> {
     try {
       await this.repository.save(state, () => !this.disposed);
       return !this.disposed;
@@ -380,10 +380,10 @@ class ExtensionNestHost implements vscode.Disposable {
 
   /** 把命令参数解析为合法的 Dashboard 筛选值。 */
   private resolveDashboardFilter(value: unknown): DashboardFilter {
-    if (isDemoGroupNode(value)) {
+    if (isExtensionGroupNode(value)) {
       return value.groupId === null ? "ungrouped" : value.groupId;
     }
-    if (isDemoExtensionNode(value)) {
+    if (isExtensionNode(value)) {
       return value.groupId === null ? "ungrouped" : value.groupId;
     }
     if (value === "ungrouped") {
@@ -436,7 +436,7 @@ class ExtensionNestHost implements vscode.Disposable {
 }
 
 /** 校验来自 Webview 或命令的动作，确保只允许当前状态中的 ID。 */
-function parseAction(value: unknown, state: DemoState): Action | undefined {
+function parseAction(value: unknown, state: DashboardState): Action | undefined {
   if (!isRecord(value) || typeof value.type !== "string") {
     return undefined;
   }
@@ -546,12 +546,12 @@ function validateTagsInput(value: string): string | undefined {
 
 /** 从原生命令参数中安全提取组 ID。 */
 function getGroupId(value: unknown): string | undefined {
-  return isDemoGroupNode(value) && value.groupId !== null ? value.groupId : undefined;
+  return isExtensionGroupNode(value) && value.groupId !== null ? value.groupId : undefined;
 }
 
 /** 从原生命令参数中安全提取扩展 ID。 */
-function getExtensionId(value: unknown, state: DemoState): string | undefined {
-  if (isDemoExtensionNode(value)) {
+function getExtensionId(value: unknown, state: DashboardState): string | undefined {
+  if (isExtensionNode(value)) {
     return value.extension.id;
   }
   if (typeof value === "string" && state.extensions.some((extension) => extension.id === value)) {
@@ -561,10 +561,10 @@ function getExtensionId(value: unknown, state: DemoState): string | undefined {
 }
 
 /** 支持树节点或节点数组的扩展命令参数，并去除未知 ID。 */
-function getExtensionIds(value: unknown, state: DemoState): string[] {
+function getExtensionIds(value: unknown, state: DashboardState): string[] {
   const values = Array.isArray(value) ? value : [value];
   const ids = values.flatMap((item) => {
-    if (isDemoExtensionNode(item)) {
+    if (isExtensionNode(item)) {
       return [item.extension.id];
     }
     return typeof item === "string" ? [item] : [];
@@ -583,7 +583,7 @@ function isNonEmptyString(value: unknown): value is string {
 }
 
 /** 将状态机值转换为当前语言的树视图状态文案。 */
-function translateFreshness(value: DemoState['freshness']): string {
+function translateFreshness(value: DashboardState['freshness']): string {
   switch (value) {
     case 'Ready': return t('Ready');
     case 'Stale': return t('Stale');

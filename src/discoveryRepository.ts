@@ -1,4 +1,4 @@
-import type { DemoState } from '../demo/src/models';
+import type { DashboardState } from '../webview/src/models';
 import { migrateDemoOrganization, parseOrganizationState, type OrganizationState } from './organizationState';
 import { emptyCache, emptyOrganization, observe, parseDiscoveryCache, projectDiscovery, validateObservations, type DiscoveryCache, type Observation } from './discoveryState';
 import { t } from './i18n';
@@ -11,7 +11,7 @@ export interface RepairCandidate { target: RepairTarget; fingerprint: string }
 
 /** 由宿主队列和进程级单写者保护；先持久化再发布，失败保留上次有效快照。 */
 export class DiscoveryRepository {
-  state: DemoState = { schemaVersion: 1, groups: [], extensions: [], freshness: 'Loading', readOnly: true };
+  state: DashboardState = { schemaVersion: 1, groups: [], extensions: [], freshness: 'Loading', readOnly: true };
   private organization: OrganizationState = emptyOrganization();
   private cache: DiscoveryCache = emptyCache();
   private visible?: Set<string>;
@@ -105,7 +105,7 @@ export class DiscoveryRepository {
     }
   }
 
-  async save(next: DemoState, current: () => boolean = () => true): Promise<void> {
+  async save(next: DashboardState, current: () => boolean = () => true): Promise<void> {
     if (!current()) return;
     if (this.state.readOnly) throw new Error(t('This window is read-only. Close other Extension Nest windows and reload this window.'));
     const organization = migrateDemoOrganization(next);
@@ -130,7 +130,7 @@ export class DiscoveryRepository {
   }
 
   /** 只有成功发现后仍没有真实历史的组织占位可清理；NotVisible 不属于残留判定。 */
-  cleanupCandidates(): DemoState['extensions'] {
+  cleanupCandidates(): DashboardState['extensions'] {
     if (this.state.readOnly || this.state.freshness !== 'Ready') return [];
     return this.state.extensions.filter(extension => extension.visibility === 'Unverified'
       && !this.cache.records[extension.id]);

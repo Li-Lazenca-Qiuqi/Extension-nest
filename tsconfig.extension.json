@@ -12,8 +12,7 @@
   },
   "include": [
     "src/**/*.ts",
-    "demo/src/models.ts",
-    "demo/src/seed.ts",
-    "demo/src/state.ts"
+    "webview/src/models.ts",
+    "webview/src/state.ts"
   ]
 }

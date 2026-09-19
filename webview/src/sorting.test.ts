@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
 import { expect,it } from 'vitest';
 import { findCardInsertion } from './useCardDrag';
-import { seedState } from './seed';
+import { seedState } from '../test/extensionFixture';
 import { migrateState,reducer } from './state';
 import { groupExtensions } from './groupExtensions';
-import { DemoTreeProvider,DemoExtensionNode,DemoGroupNode } from '../../src/demoTree';
+import { ExtensionTreeProvider,ExtensionNode,ExtensionGroupNode } from '../../src/extensionTree';
 
 it('moves groups in both directions and ignores the first/last boundaries',()=>{
  const first=seedState.groups[0].id,last=seedState.groups.at(-1)!.id;
@@ -20,8 +20,8 @@ it.each(['name','publisher'] as const)('sorts %s within one group and preserves 
  const restored=migrateState(JSON.parse(JSON.stringify(sorted)))!;
  expect(restored.extensions.filter(e=>e.groupId==='python-data')).toEqual(expected);
  expect(restored.extensions.filter(e=>e.groupId!=='python-data')).toEqual(seedState.extensions.filter(e=>e.groupId!=='python-data'));
- const tree=new DemoTreeProvider(restored,async()=>{});
- const treeIds=tree.getChildren(new DemoGroupNode('python-data','Python & Data',undefined)).map(n=>(n as DemoExtensionNode).extension.id);
+ const tree=new ExtensionTreeProvider(restored,async()=>{});
+ const treeIds=tree.getChildren(new ExtensionGroupNode('python-data','Python & Data',undefined)).map(n=>(n as ExtensionNode).extension.id);
  expect(treeIds).toEqual(groupExtensions(restored.groups,restored.extensions).find(g=>g.id==='python-data')!.extensions.map(e=>e.id));
 });
 it('moves extensions only between their peers and preserves tags and membership',()=>{

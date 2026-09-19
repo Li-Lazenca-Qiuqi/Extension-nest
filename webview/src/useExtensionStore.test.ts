@@ -2,24 +2,24 @@
 import { act, createElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, beforeAll, expect, it, vi } from 'vitest';
-import type { useDemoStore as StoreHook } from './useDemoStore';
-import type { DemoState } from './models';
+import type { useExtensionStore as StoreHook } from './useExtensionStore';
+import type { DashboardState } from './models';
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const postMessage=vi.fn();
-let useDemoStore:typeof StoreHook;
+let useExtensionStore:typeof StoreHook;
 let store:ReturnType<typeof StoreHook>;
 let cleanup=()=>{};
 beforeAll(async()=>{
  window.acquireVsCodeApi=()=>({postMessage});
- ({useDemoStore}=await import('./useDemoStore'));
+ ({useExtensionStore}=await import('./useExtensionStore'));
 });
 afterEach(()=>{cleanup();postMessage.mockClear();document.body.innerHTML=''});
 function setup(){
  const node=document.createElement('div');document.body.append(node);const root=createRoot(node);
- function Probe(){store=useDemoStore();return null}
+ function Probe(){store=useExtensionStore();return null}
  act(()=>root.render(createElement(Probe)));cleanup=()=>act(()=>root.unmount());
 }
-function snapshot(overrides:Partial<DemoState>={}){
+function snapshot(overrides:Partial<DashboardState>={}){
  act(()=>window.dispatchEvent(new MessageEvent('message',{data:{type:'state',state:{schemaVersion:1,groups:[],extensions:[],freshness:'Ready',...overrides}}})));
 }
 it('starts the native host with no seed records and requests a snapshot',()=>{

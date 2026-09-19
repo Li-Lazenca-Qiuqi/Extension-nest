@@ -31,7 +31,7 @@ it.each(['zh-cn','en','de'])('passes VS Code display language %s to the Webview 
  expect(mock.webview.html.match(/<html\b/g)).toHaveLength(1);
  expect(mock.webview.html).toContain('Content-Security-Policy');
  expect(mock.webview.html).toMatch(/<script nonce="[^"]+"/);
- expect(mock.webview.html).toContain('extension-root/demo/dist/assets/main.js');
+ expect(mock.webview.html).toContain('extension-root/webview/dist/assets/main.js');
 });
 
 it('localizes the missing-build fallback before React can load',async()=>{

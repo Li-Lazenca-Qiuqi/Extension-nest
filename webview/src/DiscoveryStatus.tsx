@@ -1,8 +1,8 @@
-import type { DemoState } from './models';
+import type { DashboardState } from './models';
 import { getUiLanguage, t } from './uiI18n';
 
 interface Props {
-  state: DemoState;
+  state: DashboardState;
   ready: boolean;
   empty: boolean;
   hasGroupSections: boolean;

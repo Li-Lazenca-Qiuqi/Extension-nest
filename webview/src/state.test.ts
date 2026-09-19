@@ -1,27 +1,14 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { seedState } from "./seed";
-import { migrateState, reducer, validateState, loadState, saveState } from "./state";
-import type { DemoState } from "./models";
+import { describe, expect, it } from "vitest";
+import { seedState } from '../test/extensionFixture';
+import { migrateState, reducer, validateState } from "./state";
+import type { DashboardState } from "./models";
 
 /** 为每个测试创建独立的 seed 状态副本。 */
-function freshState(): DemoState {
-  return reducer(seedState, { type: "reset" });
+function freshState(): DashboardState {
+  return structuredClone(seedState);
 }
 
-describe("demo state reducer", () => {
-  beforeEach(() => {
-    const values = new Map<string, string>();
-    vi.stubGlobal("localStorage", {
-      clear: () => values.clear(),
-      getItem: (key: string) => values.get(key) ?? null,
-      setItem: (key: string, value: string) => values.set(key, value),
-    });
-  });
-
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
-
+describe("organization state reducer", () => {
   it("moves selected extensions to one group", () => {
     const state = freshState();
     const next = reducer(state, { type: "move", ids: ["ms-python.python", "github.copilot"], groupId: "writing" });
@@ -115,13 +102,6 @@ describe("demo state reducer", () => {
     expect(next.extensions).toEqual(state.extensions);
   });
 
-  it("falls back to a seed copy for invalid stored data", () => {
-    localStorage.setItem("extension-nest-demo-v1", "{broken json");
-    const loaded = loadState();
-    expect(loaded).toEqual(seedState);
-    expect(loaded).not.toBe(seedState);
-    expect(loaded.groups).not.toBe(seedState.groups);
-  });
 
   it("migrates schema 1 states that do not have tags", () => {
     const state = freshState();
@@ -143,9 +123,4 @@ describe("demo state reducer", () => {
     );
   });
 
-  it("saves and loads a valid state", () => {
-    const state = freshState();
-    expect(saveState(state)).toBe(true);
-    expect(loadState()).toEqual(state);
-  });
 });

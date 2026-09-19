@@ -1,5 +1,5 @@
 {
-  "name": "extension-nest-demo",
+  "name": "extension-nest-webview",
   "private": true,
   "type": "module",
   "scripts": {
