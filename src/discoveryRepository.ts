@@ -19,6 +19,7 @@ export class DiscoveryRepository {
 
   async refresh(read: () => readonly Observation[], writable: boolean, current: () => boolean = () => true,
     hiddenIds: ReadonlySet<string> = new Set()): Promise<void> {
+    if (!current()) return;
     const project = (organization: OrganizationState, cache: DiscoveryCache, visible?: ReadonlySet<string>) => {
       const state = projectDiscovery(organization, cache, visible);
       return { ...state, extensions: state.extensions.filter(extension => !hiddenIds.has(extension.id)) };
@@ -64,6 +65,7 @@ export class DiscoveryRepository {
   }
 
   async save(next: DemoState, current: () => boolean = () => true): Promise<void> {
+    if (!current()) return;
     if (this.state.readOnly) throw new Error(t('This window is read-only. Close other Extension Nest windows and reload this window.'));
     const organization = migrateDemoOrganization(next);
     // 视图过滤不能隐式删除内置项的组织关系；删除分组时仍解除该组的所有归属。
@@ -79,6 +81,7 @@ export class DiscoveryRepository {
       .map(id => this.hiddenIds.has(id) ? id : visibleOrder[index++])
       .filter((id): id is string => id !== undefined);
     organization.extensionOrder.push(...visibleOrder.slice(index));
+    if (!current()) return;
     await this.storage.update(ORGANIZATION_KEY, organization);
     if (!current()) return;
     this.organization = organization;

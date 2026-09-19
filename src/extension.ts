@@ -1,3 +1,4 @@
+import { RefreshCoordinator } from './refreshCoordinator';
 import { DiscoveryRepository } from "./discoveryRepository";
 import { readBundledExtensionIds } from "./bundledExtensions";
 import { WriterLease } from "./writerLease";
@@ -46,11 +47,12 @@ class ExtensionNestHost implements vscode.Disposable {
   private readonly repository: DiscoveryRepository;
   private readonly lease: WriterLease;
   private disposed = false;
-  private refreshTimer?: ReturnType<typeof setTimeout>;
+  private readonly refreshCoordinator: RefreshCoordinator;
   private actionQueue: Promise<void> = Promise.resolve();
 
   constructor(private readonly context: vscode.ExtensionContext) {
     this.repository = new DiscoveryRepository(context.globalState);
+    this.refreshCoordinator = new RefreshCoordinator(work => this.enqueue(work), current => this.readSnapshot(current));
     this.lease = new WriterLease(context.globalStorageUri.toString());
     this.state = this.repository.state;
     this.tree = new DemoTreeProvider(this.state, (action) => this.dispatchAction(action));
@@ -91,7 +93,7 @@ class ExtensionNestHost implements vscode.Disposable {
   /** 释放树视图、Dashboard 和宿主事件资源。 */
   dispose(): void {
     this.disposed = true;
-    if (this.refreshTimer) clearTimeout(this.refreshTimer);
+    this.refreshCoordinator.dispose();
     void this.actionQueue.finally(() => this.lease.dispose());
     this.dashboard.dispose();
     this.tree.dispose();
@@ -143,6 +145,7 @@ class ExtensionNestHost implements vscode.Disposable {
   /** 原生多选列表预览精确 ID 与受影响元数据，确认前不写入或删除。 */
   private async cleanupUnverified(): Promise<void> {
     await this.refresh();
+    if (this.disposed) return;
     if (this.state.readOnly || this.state.freshness !== 'Ready') {
       this.reportError(t('Current window cannot clean up records. Resolve the read error first or use a writable window.')); return;
     }
@@ -321,8 +324,9 @@ class ExtensionNestHost implements vscode.Disposable {
   private async persist(state: DemoState): Promise<boolean> {
     try {
       await this.repository.save(state, () => !this.disposed);
-      return true;
+      return !this.disposed;
     } catch (error) {
+      if (this.disposed) return false;
       this.repository.fail(error);
       this.state = this.repository.state;
       this.notifyStateChanged();
@@ -333,6 +337,7 @@ class ExtensionNestHost implements vscode.Disposable {
 
   /** 同时在原生通知和 Dashboard 状态区报告错误。 */
   private reportError(message: string): void {
+    if (this.disposed) return;
     void vscode.window.showErrorMessage(message);
     void this.dashboard.postError(message);
   }
@@ -364,40 +369,38 @@ class ExtensionNestHost implements vscode.Disposable {
     return "all";
   }
 
-  /** 事件只请求补读；短时间的安装/宿主事件合并为一次读取。 */
+  /** 安装、焦点、可见性和手动入口统一合并，事件风暴只保留一次补读。 */
   private scheduleRefresh(): void {
-    if (this.disposed) return;
-    if (this.refreshTimer) clearTimeout(this.refreshTimer);
-    this.refreshTimer = setTimeout(() => { this.refreshTimer = undefined; void this.refresh(); }, 150);
+    void this.refreshCoordinator.request(150).catch(error => this.reportError(getErrorMessage(error)));
   }
 
-  private refresh(): Promise<void> {
-    return this.enqueue(async () => {
-      if (this.disposed) return;
-      let hiddenIds: ReadonlySet<string>;
-      try {
-        hiddenIds = vscode.workspace.getConfiguration('extensionNest').get<boolean>('showBuiltinExtensions', false)
-          ? new Set() : readBundledExtensionIds(vscode.env.appRoot);
-      } catch (error) {
-        this.repository.fail(error, true);
-        this.state = this.repository.state;
-        this.notifyStateChanged();
-        return;
-      }
-      await this.repository.refresh(() => {
-        if (vscode.env.uiKind !== vscode.UIKind.Desktop || this.context.extension.extensionKind !== vscode.ExtensionKind.UI
-          || this.context.extensionUri.scheme !== 'file') throw new Error(t('Desktop VS Code with a local UI extension host is required.'));
-        return vscode.extensions.all.map(extension => {
-          const manifest = extension.packageJSON;
-          return { id: extension.id, name: manifest.displayName || manifest.name || extension.id,
-            publisher: manifest.publisher || extension.id.split('.')[0], description: manifest.description || '',
-            version: manifest.version || '—', categories: manifest.categories };
-        });
-      }, this.lease.owned, () => !this.disposed, hiddenIds);
-      if (this.disposed) return;
+  private refresh(): Promise<void> { return this.refreshCoordinator.request(); }
+
+  private async readSnapshot(current: () => boolean): Promise<void> {
+    if (!current()) return;
+    let hiddenIds: ReadonlySet<string>;
+    try {
+      hiddenIds = vscode.workspace.getConfiguration('extensionNest').get<boolean>('showBuiltinExtensions', false)
+        ? new Set() : readBundledExtensionIds(vscode.env.appRoot);
+    } catch (error) {
+      this.repository.fail(error, true);
       this.state = this.repository.state;
       this.notifyStateChanged();
-    });
+      return;
+    }
+    await this.repository.refresh(() => {
+      if (vscode.env.uiKind !== vscode.UIKind.Desktop || this.context.extension.extensionKind !== vscode.ExtensionKind.UI
+        || this.context.extensionUri.scheme !== 'file') throw new Error(t('Desktop VS Code with a local UI extension host is required.'));
+      return vscode.extensions.all.map(extension => {
+        const manifest = extension.packageJSON;
+        return { id: extension.id, name: manifest.displayName || manifest.name || extension.id,
+          publisher: manifest.publisher || extension.id.split('.')[0], description: manifest.description || '',
+          version: manifest.version || '—', categories: manifest.categories };
+      });
+    }, this.lease.owned, current, hiddenIds);
+    if (!current()) return;
+    this.state = this.repository.state;
+    this.notifyStateChanged();
   }
 
   /** 返回组当前包含的已知扩展数量。 */

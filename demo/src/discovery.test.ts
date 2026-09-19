@@ -16,6 +16,28 @@ function storage() {
 }
 
 describe('公开发现与组织存储', () => {
+  it('失效的保存不写入，写入期间释放后不发布新组织状态',async()=>{
+    const db=storage(),repo=new DiscoveryRepository(db);
+    await repo.refresh(()=>[item],true);
+    const before=structuredClone(repo.state);
+    const stored=structuredClone(db.values.get(ORGANIZATION_KEY));
+    const next=reducer(repo.state,{type:'setTags',ids:[item.id],tags:['New']});
+    await repo.save(next,()=>false);
+    expect(db.values.get(ORGANIZATION_KEY)).toEqual(stored);
+    let release!:()=>void;
+    let started!:()=>void;
+    const entered=new Promise<void>(resolve=>{started=resolve});
+    const gate=new Promise<void>(resolve=>{release=resolve});
+    const update=db.update;
+    db.update=async(key,value)=>{started();await gate;await update(key,value)};
+    let current=true;
+    const save=repo.save(next,()=>current);
+    await entered;
+    current=false;release();await save;
+    expect(repo.state).toEqual(before);
+    // 已发出的存储写入不可取消；失效保护保证不向旧界面发布。
+    expect((db.values.get(ORGANIZATION_KEY) as ReturnType<typeof emptyOrganization>).tags[item.id]).toEqual(['New']);
+  });
   it('成功空扫描也保存时间，重启失败及写入失败不推进时间',async()=>{
     const db=storage(), repo=new DiscoveryRepository(db);
     await repo.refresh(()=>[],true);

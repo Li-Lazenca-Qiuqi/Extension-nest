@@ -62,7 +62,14 @@ export class DashboardPanel {
       },
       undefined,
     );
-    panel.onDidChangeViewState(event => { if (event.webviewPanel.visible) void this.callbacks.onRefresh(); });
+    let visible = panel.visible;
+    let active = panel.active;
+    panel.onDidChangeViewState(event => {
+      const next = event.webviewPanel;
+      const returned = (next.visible && !visible) || (next.active && !active);
+      visible = next.visible; active = next.active;
+      if (returned) void this.callbacks.onRefresh();
+    });
     panel.webview.onDidReceiveMessage(
       (message: unknown) => this.handleMessage(message),
       undefined,
