@@ -30,12 +30,12 @@ body.vscode-light{color-scheme:light}
 .dashboard-toolbar .metrics{margin:0;padding:0;border:0;gap:2px;flex-wrap:nowrap}
 .dashboard-toolbar .metric{padding:3px 5px;white-space:nowrap;font-size:11px}
 .dashboard-toolbar .metric strong{font-size:12px}
-.dashboard-toolbar .filters{margin-left:auto;flex-wrap:nowrap;width:auto;min-width:0}
+.dashboard-toolbar .filters{margin-left:0;flex-wrap:nowrap;width:auto;min-width:0}
 .dashboard-toolbar .filters input:not([type=checkbox]){width:96px;flex:none;font-size:12px}
-.dashboard-toolbar .filters .tag-filter{width:var(--filter-width,120px);max-width:min(220px,calc(100vw - 36px));flex:none}
-.dashboard-toolbar .header-actions{flex-shrink:0;margin-left:auto;justify-content:flex-end}
+.dashboard-toolbar .filters .tag-filter{width:max-content;min-width:80px;max-width:min(220px,calc(100vw - 36px));flex:none}
+.dashboard-toolbar .header-actions{flex-shrink:0;margin-left:0;justify-content:flex-end}
 .dashboard-toolbar .header-actions button{font-size:12px;white-space:nowrap}
-@media(max-width:700px){.dashboard-toolbar .filters{margin-left:0;flex:1 1 100%;flex-wrap:wrap;justify-content:flex-end}.dashboard-toolbar .filters input:not([type=checkbox]){flex:none;width:96px}.dashboard-toolbar .metrics{flex-wrap:wrap}.dashboard-toolbar{gap:8px}}
+@media(max-width:700px){.dashboard-toolbar .filters{margin-left:auto;flex:0 1 auto;flex-wrap:wrap;justify-content:flex-end}.dashboard-toolbar .filters input:not([type=checkbox]){flex:none;width:96px}.dashboard-toolbar .metrics{flex-wrap:wrap}.dashboard-toolbar{gap:8px}}
 
 .tag-filter summary{display:flex;align-items:center;gap:6px;height:28px;background:var(--vscode-input-background,#202329)}
 .tag-filter summary::-webkit-details-marker{display:none}
@@ -81,7 +81,7 @@ button:disabled{opacity:.4;cursor:default}
 .extension-card:not(.is-historical) .card-tags{grid-column:1 / 3}
 
 .dashboard-toolbar .filters{align-items:flex-start}
-.group-filter summary>span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
 .group-filter summary svg{flex-shrink:0}
 .group-filter-options button{width:100%;justify-content:space-between;border:0;padding:5px 7px;min-height:28px;font-size:12px;text-align:left;border-radius:3px}
 .group-filter-options button>span{min-width:0;overflow-wrap:anywhere}
@@ -91,8 +91,8 @@ button:disabled{opacity:.4;cursor:default}
 .dashboard-toolbar .tag-filter-options{width:100%;min-width:0;max-width:100%;scrollbar-gutter:stable}
 
 .dashboard-toolbar .filters{position:relative}
-.filter-width-measure{position:absolute;visibility:hidden;pointer-events:none;width:max-content;font-size:12px;height:0;overflow:hidden}
-.filter-width-measure>span{display:block;white-space:nowrap}
+
+
 .filter-caption{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tag-filter summary svg{flex-shrink:0}
 
@@ -101,3 +101,17 @@ button:disabled{opacity:.4;cursor:default}
 .sort-options{width:100%;min-width:0;max-width:100%;scrollbar-gutter:stable;white-space:normal}
 .group-sort-menu{margin-left:auto;font-weight:400}
 .sort-options button{white-space:normal!important;overflow-wrap:anywhere}
+
+.toolbar-controls{display:flex;align-items:flex-start;justify-content:flex-end;flex-wrap:wrap;gap:8px 12px;margin-left:auto;max-width:100%;min-width:0}
+
+@media(max-width:1100px){.toolbar-controls{display:contents}.dashboard-toolbar .filters{margin-left:auto}.dashboard-toolbar .header-actions{margin-left:auto}}
+
+/* 隐藏选项参与固有宽度计算，不在缩放时测量 DOM 或回写 React 状态。 */
+.menu-width-sizer{display:block;visibility:hidden;pointer-events:none;white-space:nowrap;height:28px;overflow:hidden;font-size:12px;font-weight:400;padding-inline:33px}
+.menu-width-sizer>span{display:block}
+.dashboard-toolbar .tag-filter summary{position:relative;display:block;padding:0;overflow:hidden}
+.filter-button-content{position:absolute;inset:0;display:flex;align-items:center;gap:6px;padding:0 8px;min-width:0}
+.filter-button-content>span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sort-menu{width:max-content;min-width:80px;max-width:min(180px,calc(100vw - 36px));height:28px}
+.sort-menu>.menu-width-sizer{padding-inline:20px}
+.sort-trigger{position:absolute;inset:0;height:28px}

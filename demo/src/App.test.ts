@@ -26,10 +26,24 @@ it('keeps visibility independent from Ungrouped and places cleanup last',()=>{
  expect(metrics[1].getAttribute('aria-pressed')).toBe('true');
  expect(node.querySelectorAll('article')).toHaveLength(1);
  act(()=>metrics[2].click());
- expect(group.textContent).toBe('Ungrouped');
+ expect(group.querySelector('.filter-button-content')?.textContent).toBe('Ungrouped');
  expect(node.querySelector('article')?.getAttribute('data-extension')).toBe(extensions[1].id);
  expect(node.querySelector('.header-actions')?.lastElementChild?.className).toBe('cleanup-unverified');
  act(()=>node.querySelector<HTMLButtonElement>('.cleanup-unverified')!.click());
  expect(postMessage).toHaveBeenCalledWith({type:'cleanupUnverified'});
- act(()=>metrics[0].click());expect(group.textContent).toBe('All groups');expect(node.querySelectorAll('article')).toHaveLength(3);
+ act(()=>metrics[0].click());expect(group.querySelector('.filter-button-content')?.textContent).toBe('All groups');expect(node.querySelectorAll('article')).toHaveLength(3);
+});
+it('shows an empty group when selected or found by name without a no-results notice',()=>{
+ const node=document.createElement('div');document.body.append(node);const root=createRoot(node);
+ act(()=>root.render(createElement(App)));cleanup=()=>act(()=>root.unmount());
+ act(()=>window.dispatchEvent(new MessageEvent('message',{data:{type:'state',state:{...seedState,groups:[{id:'empty',name:'Research Lab',color:'#123456'}],extensions:[],freshness:'Ready'}}})));
+ expect(node.querySelector('[data-group-section="empty"]')).toBeNull();
+ const search=node.querySelector<HTMLInputElement>('#search')!;
+ act(()=>{Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value')!.set!.call(search,'research');search.dispatchEvent(new Event('input',{bubbles:true}))});
+ expect(node.querySelector('[data-group-section="empty"]')).not.toBeNull();
+ expect(node.querySelector('.discovery-empty')).toBeNull();
+ act(()=>{Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value')!.set!.call(search,'');search.dispatchEvent(new Event('input',{bubbles:true}))});
+ act(()=>Array.from(node.querySelectorAll<HTMLButtonElement>('.group-filter-options button')).find(b=>b.textContent==='Research Lab')!.click());
+ expect(node.querySelector('[data-group-section="empty"]')).not.toBeNull();
+ expect(node.querySelector('.discovery-empty')).toBeNull();
 });

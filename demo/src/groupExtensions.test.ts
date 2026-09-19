@@ -21,3 +21,13 @@ describe('default grouped dashboard',()=>{
   expect(sections.find(s=>s.id==='writing')?.extensions.find(e=>e.id==='ms-python.python')?.tags).toEqual(seedState.extensions.find(e=>e.id==='ms-python.python')?.tags);
  });
 });
+it('keeps empty sections only for All, an explicit group, or a matching group name',()=>{
+ const groups=[{id:'empty',name:'Research Lab',color:'#123456'},{id:'other',name:'Other',color:'#123456'}];
+ expect(groupExtensions(groups,[],'all',false).map(g=>g.id)).toEqual(['empty','other','ungrouped']);
+ expect(groupExtensions(groups,[],'all',true)).toEqual([]);
+ expect(groupExtensions(groups,[],'empty',true).map(g=>g.id)).toEqual(['empty']);
+ expect(groupExtensions(groups,[],'all',true,' research ').map(g=>g.id)).toEqual(['empty']);
+ expect(groupExtensions(groups,[],'all',true,'unmatched')).toEqual([]);
+ expect(groupExtensions(groups,[],'other',true,'research').map(g=>g.id)).toEqual(['other']);
+ expect(groupExtensions(groups,[],'ungrouped',true).map(g=>g.id)).toEqual(['ungrouped']);
+});

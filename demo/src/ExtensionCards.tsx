@@ -9,13 +9,13 @@ import { groupCssColor } from './groupColors';
 import { findCardInsertion, useCardDrag } from './useCardDrag';
 import { findGroupDropTarget } from './groupDropTarget';
 import { EXTENSION_DRAG_MIME, parseDraggedIds } from './dragPayload';
-interface Props { onSortAction?:(action:Action)=>void; collapsedGroups?:Record<string,boolean>; onToggleGroup?:(id:string)=>void; twoColumns?:boolean; icons?:Record<string,string>; isNative?:boolean; activeGroup:string; filtered:boolean; rows:Extension[]; groups:Group[]; selected:string[]; onSelect:(ids:string[])=>void; onDropExtensions:(ids:string[],groupId:string|null,beforeId?:string|null)=>void; menu:string|null; onMenu:(id:string|null)=>void; onEditTags:(id:string)=>void; onFilterTag:(tag:string)=>void; onOpenExtension:(id:string)=>void; onCopy:(id:string)=>void }
+interface Props { onSortAction?:(action:Action)=>void; collapsedGroups?:Record<string,boolean>; onToggleGroup?:(id:string)=>void; twoColumns?:boolean; icons?:Record<string,string>; isNative?:boolean; activeGroup:string; filtered:boolean; query?:string; rows:Extension[]; groups:Group[]; selected:string[]; onSelect:(ids:string[])=>void; onDropExtensions:(ids:string[],groupId:string|null,beforeId?:string|null)=>void; menu:string|null; onMenu:(id:string|null)=>void; onEditTags:(id:string)=>void; onFilterTag:(tag:string)=>void; onOpenExtension:(id:string)=>void; onCopy:(id:string)=>void }
 /** 以紧凑卡片展示插件，保留鼠标选择、移组和管理操作。 */
 export default function ExtensionCards(p:Props) {
  const [movingGroup,setMovingGroup]=useState<string|null>(null);
  const [groupTarget,setGroupTarget]=useState<{id:string;after:boolean}|null>(null);
  const drag=useCardDrag(p.onDropExtensions,()=>p.onMenu(null));
- const sections=groupExtensions(p.groups,p.rows,p.activeGroup,p.filtered);
+ const sections=groupExtensions(p.groups,p.rows,p.activeGroup,p.filtered,p.query);
  const select=(id:string,additive:boolean)=>p.onSelect(additive?(p.selected.includes(id)?p.selected.filter(value=>value!==id):[...p.selected,id]):[id]);
  const groupStyle=(id:string)=>({'--group-color':groupCssColor(p.groups.find(group=>group.id===id)?.color)} as CSSProperties);
  return <div className={`cards-region${p.twoColumns?' groups-two-columns':''}`}
